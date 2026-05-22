@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vía Global — Panel Gestor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#1D9E75;--td:#0F6E56;--tdd:#085041;--tl:#E1F5EE;
+  --gold:#BA7517;--gl:#FAEEDA;
+  --blue:#378ADD;--bl:#E6F1FB;--bd:#185FA5;
+  --purple:#7F77DD;--pl:#EEEDFE;--pd:#3C3489;
+  --red:#E24B4A;--rl:#FCEBEB;--rd:#791F1F;
+  --bg:#f4f3ef;--w:#fff;--brd:#e2e0da;--brd2:#cbc8bf;
+  --tx:#1a1a18;--mt:#6b6a66;--ht:#a8a6a0;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;display:flex;flex-direction:column;font-size:14px}
+nav{background:var(--tdd);display:flex;align-items:center;flex-shrink:0;padding:0 1rem}
+.nav-logo{padding:.7rem 1rem .7rem 0;display:flex;align-items:center;gap:10px;border-right:1px solid rgba(255,255,255,.1);margin-right:8px}
+.nav-logo img{height:38px;width:auto;filter:brightness(0) invert(1)}
+.ntabs{display:flex;flex:1}
+.ntab{padding:0 1.1rem;height:52px;display:flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,.55);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.ntab:hover{color:rgba(255,255,255,.85)}
+.ntab.active{color:#fff;border-bottom-color:#fff}
+.nbadge{background:rgba(255,255,255,.2);color:#fff;font-size:10px;padding:1px 7px;border-radius:10px}
+.page{display:none;flex:1;min-height:0;overflow:hidden;flex-direction:column}
+.page.active{display:flex}
+.abar{background:var(--tdd);padding:.6rem 1.25rem;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.abar-lbl{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.07em;margin-right:4px}
+.atab{padding:5px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .18s}
+.atab:hover{background:rgba(255,255,255,.1);color:#fff}
+.atab.active{background:#fff;color:var(--tdd);font-weight:500;border-color:#fff}
+.amain{display:flex;flex:1;min-height:0;overflow:hidden}
+.sb{width:230px;background:var(--w);border-right:1px solid var(--brd);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.sbs{padding:.85rem 1rem;border-bottom:1px solid var(--brd)}
+.sbl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--ht);margin-bottom:8px}
+.sst{display:flex;align-items:center;gap:7px;padding:4px 0;font-size:12px;color:var(--mt)}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--brd2);flex-shrink:0}
+.sst.done .sdot{background:var(--teal)}
+.sst.cur{color:var(--tx);font-weight:500}
+.sst.cur .sdot{background:var(--gold)}
+.sbbtns{display:flex;gap:5px;margin-top:8px}
+.sbbtn{flex:1;padding:5px;border:1px solid var(--brd);border-radius:6px;background:transparent;font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;color:var(--mt);transition:all .15s}
+.sbbtn:hover{border-color:var(--teal);color:var(--td)}
+.cli{display:flex;align-items:flex-start;gap:7px;padding:5px 0;font-size:12px;cursor:pointer;border-bottom:1px solid var(--brd)}
+.cli:last-child{border:none}
+.clb{width:14px;height:14px;border:1.5px solid var(--brd2);border-radius:3px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.cli.done .clb{background:var(--teal);border-color:var(--teal)}
+.cli.done .clb::after{content:'✓';color:#fff;font-size:9px}
+.cli.done span{color:var(--ht);text-decoration:line-through}
+.ccol{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.chdr{padding:.8rem 1.25rem;background:var(--w);border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px}
+.aav{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.chi p{font-size:14px;font-weight:500}
+.chi small{font-size:11px;color:var(--mt)}
+.svi{margin-left:auto;font-size:11px;color:var(--teal);opacity:0;transition:opacity .3s}
+.svi.on{opacity:1}
+.ds-btn{padding:5px 12px;background:var(--gl);border:1px solid var(--gold);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;color:var(--gold);cursor:pointer;transition:all .15s;white-space:nowrap}
+.ds-btn:hover{background:var(--gold);color:#fff}
+.msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:10px}
+.msg{display:flex;gap:8px;max-width:88%;animation:mIn .2s ease}
+@keyframes mIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.msg.ag{align-self:flex-start}
+.msg.us{align-self:flex-end;flex-direction:row-reverse}
+.mav{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px}
+.mb{padding:9px 13px;border-radius:11px;font-size:13px;line-height:1.55}
+.msg.ag .mb{background:var(--w);border:1px solid var(--brd);border-radius:3px 11px 11px 11px}
+.msg.us .mb{background:var(--tdd);color:#fff;border-radius:11px 3px 11px 11px}
+.mb ul{padding-left:1.1rem;margin-top:3px}
+.mb li{margin-bottom:2px}
+.tdots{display:flex;gap:3px;align-items:center;padding:10px 13px}
+.tdots span{width:5px;height:5px;border-radius:50%;background:var(--ht);animation:tda 1.2s infinite}
+.tdots span:nth-child(2){animation-delay:.2s}
+.tdots span:nth-child(3){animation-delay:.4s}
+@keyframes tda{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+.qabar{padding:.55rem 1rem;display:flex;gap:5px;flex-wrap:wrap;border-top:1px solid var(--brd);background:var(--bg)}
+.qa{padding:4px 11px;border:1px solid var(--brd2);border-radius:14px;background:var(--w);font-family:'DM Sans',sans-serif;font-size:11px;color:var(--mt);cursor:pointer;transition:all .15s;white-space:nowrap}
+.qa:hover{border-color:var(--teal);color:var(--td);background:var(--tl)}
+.inprow{padding:.8rem 1rem;background:var(--w);border-top:1px solid var(--brd);display:flex;gap:7px;align-items:flex-end}
+.inprow textarea{flex:1;padding:9px 13px;border:1px solid var(--brd);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);resize:none;outline:none;max-height:110px;line-height:1.5;transition:border-color .2s}
+.inprow textarea:focus{border-color:var(--teal)}
+.sndbtn{width:36px;height:36px;border-radius:9px;background:var(--td);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.sndbtn:hover{background:var(--teal)}
+.sndbtn svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dbp{overflow:auto}
+.dbhdr{padding:1.1rem 1.5rem;background:var(--w);border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.dbhdr h2{font-family:'DM Serif Display',serif;font-size:19px;font-weight:400;flex:1}
+.dbsrch{padding:7px 13px;border:1px solid var(--brd);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:200px;transition:border-color .2s}
+.dbsrch:focus{border-color:var(--teal)}
+.fltbtn{padding:5px 12px;border:1px solid var(--brd);border-radius:8px;background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;color:var(--mt);transition:all .15s}
+.fltbtn.on{background:var(--tl);border-color:var(--teal);color:var(--td)}
+.dbcnt{padding:1.1rem 1.5rem;flex:1}
+.dbsec{margin-bottom:1.5rem}
+.dbsech{display:flex;align-items:center;gap:10px;margin-bottom:.75rem}
+.vbdg{padding:4px 12px;border-radius:12px;font-size:12px;font-weight:500}
+.bt{background:var(--tl);color:var(--tdd)}
+.bn{background:var(--bl);color:var(--bd)}
+.bdd{background:var(--pl);color:var(--pd)}
+.dbcc{font-size:12px;color:var(--mt)}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.ccard{background:var(--w);border:1px solid var(--brd);border-radius:10px;padding:.9rem;cursor:pointer;transition:all .15s;position:relative}
+.ccard:hover{border-color:var(--teal);transform:translateY(-1px)}
+.ctop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.cname{font-size:14px;font-weight:500}
+.cdate{font-size:11px;color:var(--ht)}
+.cstat{font-size:11px;padding:3px 9px;border-radius:10px}
+.sa{background:var(--gl);color:var(--gold)}
+.sd{background:var(--tl);color:var(--td)}
+.sr{background:var(--rl);color:var(--rd)}
+.cprog{height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin-bottom:8px}
+.cprogf{height:100%;border-radius:2px;transition:width .4s}
+.cmeta{display:flex;gap:8px;font-size:11px;color:var(--mt);flex-wrap:wrap}
+.cdel{position:absolute;top:7px;right:7px;background:transparent;border:none;cursor:pointer;color:var(--ht);font-size:13px;opacity:0;transition:opacity .15s;padding:2px 4px}
+.ccard:hover .cdel{opacity:1}
+.cdel:hover{color:var(--red)}
+.cempty{text-align:center;padding:2rem;color:var(--mt);background:var(--w);border-radius:10px;border:1px dashed var(--brd2);font-size:13px}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:1rem}
+.ov.open{display:flex}
+.modal{background:var(--w);border-radius:14px;width:100%;max-width:660px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+.mhdr{padding:1rem 1.25rem;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.mhdr h3{font-size:15px;font-weight:500}
+.mhdr-acts{display:flex;gap:8px;align-items:center}
+.mclose{background:transparent;border:none;cursor:pointer;font-size:17px;color:var(--mt);padding:2px 6px}
+.mbody{overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:1rem}
+.dss{background:var(--bg);border-radius:10px;padding:1rem}
+.dst{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--ht);margin-bottom:10px}
+.dsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.dsf label{font-size:11px;color:var(--mt);display:block;margin-bottom:3px}
+.dsv{font-size:13px;font-weight:500;padding:7px 10px;background:var(--w);border-radius:6px;border:1px solid var(--brd);min-height:32px;line-height:1.4}
+.dsv.emp{color:var(--ht);font-style:italic;font-weight:400}
+.pdfbtn{padding:7px 16px;background:var(--td);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:5px}
+.pdfbtn:hover{background:var(--teal)}
+.chmsg{font-size:12px;line-height:1.55;padding:6px 0;border-bottom:1px solid var(--brd)}
+.chmsg:last-child{border:none}
+.chmsg .role{font-weight:500;font-size:10px;color:var(--td);margin-bottom:2px;text-transform:uppercase;letter-spacing:.05em}
+.chmsg .role.ur{color:var(--bd)}
+@media(max-width:580px){.sb{display:none}.dsgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">
+    <img src="/logo.png" alt="Vía Global">
+  </div>
+  <div class="ntabs">
+    <div class="ntab active" onclick="showPage('ag')">🤖 Agentes</div>
+    <div class="ntab" onclick="showPage('db')">🗄 Base de datos <span class="nbadge" id="tbdg">0</span></div>
+  </div>
+</nav>
+
+<div class="page active" id="page-ag">
+  <div class="abar">
+    <span class="abar-lbl">Agente</span>
+    <button class="atab active" onclick="sw('turista')">✈ Turista B1/B2</button>
+    <button class="atab" onclick="sw('tn')">💼 Visa TN</button>
+    <button class="atab" onclick="sw('td')">👨‍👩‍👧 Visa TD</button>
+  </div>
+  <div class="amain">
+    <div class="sb" id="sb"></div>
+    <div class="ccol">
+      <div class="chdr" id="chdr"></div>
+      <div class="msgs" id="msgs"></div>
+      <div class="qabar" id="qabar"></div>
+      <div class="inprow">
+        <textarea id="inp" rows="1" placeholder="Escribe o usa acciones rápidas..." onkeydown="hk(event)" oninput="ar(this)"></textarea>
+        <button class="sndbtn" onclick="snd()">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page dbp" id="page-db">
+  <div class="dbhdr">
+    <h2>Base de datos de casos</h2>
+    <input class="dbsrch" id="dbsrch" placeholder="Buscar cliente..." oninput="rdb()">
+    <button class="fltbtn on" data-f="all" onclick="setF('all')">Todos</button>
+    <button class="fltbtn" data-f="turista" onclick="setF('turista')">✈ Turista</button>
+    <button class="fltbtn" data-f="tn" onclick="setF('tn')">💼 TN</button>
+    <button class="fltbtn" data-f="td" onclick="setF('td')">👨‍👩‍👧 TD</button>
+  </div>
+  <div class="dbcnt" id="dbcnt"></div>
+</div>
+
+<div class="ov" id="ov" onclick="clov(event)">
+  <div class="modal">
+    <div class="mhdr">
+      <h3 id="mtitle">Detalle del caso</h3>
+      <div class="mhdr-acts">
+        <button class="pdfbtn" id="pdfbtn" onclick="dlPDF()" style="display:none">⬇ DS-160 PDF</button>
+        <button class="mclose" onclick="clovd()">✕</button>
+      </div>
+    </div>
+    <div class="mbody" id="mbody"></div>
+  </div>
+</div>
+
+<script>
+const DBKEY='vg_v3';
+const AGENTS={
+  turista:{name:'Agente Turista B1/B2',emoji:'✈',bg:'#E1F5EE',color:'#1D9E75',desc:'Especialista en visa de turista',
+    checklist:['Pasaporte vigente (+6 meses)','Pasaporte anterior','Foto fondo blanco','Acta de nacimiento','Carta laboral con sueldo','Estados de cuenta 3 meses','Comprobante de domicilio','Escrituras / propiedad','Actas matrimonio/hijos','Itinerario o vuelo','Reserva de hotel','Carta de invitación','DS-160 completado','Pago MRV fee','Cita consular agendada'],
+    status:['Evaluación aprobada','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
+    qa:['Nuevo caso','Preparar entrevista','Preguntas del consulado','Cuánto dinero en cuenta','Motivos de rechazo','Generar DS-160'],
+    prompt:`Eres el Agente Turista de Vía Global, gestoría de visas. Ayudas al gestor con casos de visa B1/B2.
+Cuando tengas datos del cliente, incluye al final de tu respuesta:
+<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","motivo_viaje":"","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
+Actualiza el JSON con cada nuevo dato. Recopila información del cliente con preguntas naturales, genera checklist dinámico, prepara entrevista consular, advierte riesgos. Habla en español de México. Sé conciso.`},
+  tn:{name:'Agente Visa TN',emoji:'💼',bg:'#E6F1FB',color:'#378ADD',desc:'Especialista en visa TN — T-MEC',
+    checklist:['Pasaporte vigente','Foto fondo blanco','Título universitario','Cédula profesional','CV en inglés','Certificaciones','Carta oferta empleador USA','Descripción del puesto','EIN del empleador','Profesión verificada T-MEC','DS-160 completado','Pago MRV fee','Cita consular agendada'],
+    status:['Evaluación aprobada','Profesión verificada T-MEC','Carta oferta validada','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
+    qa:['Nuevo caso','Verificar profesión T-MEC','Validar carta oferta','Preparar entrevista','Profesiones elegibles','Generar DS-160'],
+    prompt:`Eres el Agente TN de Vía Global. Ayudas al gestor con visas TN bajo el T-MEC.
+Cuando tengas datos, incluye al final:
+<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","empleador_usa":"","puesto_usa":"","salario_usa":"","profesion_tmec":"","motivo_viaje":"Trabajo temporal TN","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
+Verifica que la profesión esté en la lista T-MEC. Valida la carta oferta (puesto, salario, duración, EIN). Recopila datos, prepara entrevista. Habla en español de México.`},
+  td:{name:'Agente Visa TD',emoji:'👨‍👩‍👧',bg:'#EEEDFE',color:'#7F77DD',desc:'Especialista en visa TD — dependientes',
+    checklist:['Pasaporte del dependiente','Foto fondo blanco','Acta de nacimiento dependiente','Acta de matrimonio (cónyuge)','Acta de nacimiento del titular','Copia de visa TN del titular','Carta de empleo del titular','DS-160 del dependiente','Pago MRV fee','Cita conjunta con titular'],
+    status:['TN del titular verificado','Vínculo familiar documentado','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada con titular','Entrevista realizada','Visa aprobada'],
+    qa:['Nuevo caso TD','Verificar TN del titular','Cita conjunta','Preparar entrevista','TD puede trabajar','Generar DS-160'],
+    prompt:`Eres el Agente TD de Vía Global. Ayudas al gestor con visas TD para dependientes de titulares TN.
+Cuando tengas datos, incluye al final:
+<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","relacion_titular":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","titular_nombre":"","titular_visa":"","motivo_viaje":"Acompañar titular TN","destino_usa":"","duracion_estancia":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
+Verifica TN del titular (obligatorio). Recopila datos del dependiente. Coordina cita conjunta. El TD no da derecho a trabajar en EE.UU. Habla en español de México.`}
+};
+
+const DS_SECS=[
+  {t:'Datos personales',f:[{k:'apellido',l:'Apellido(s)'},{k:'nombre',l:'Nombre(s)'},{k:'fecha_nac',l:'Fecha de nacimiento'},{k:'lugar_nac',l:'Lugar de nacimiento'},{k:'nacionalidad',l:'Nacionalidad'},{k:'estado_civil',l:'Estado civil'}]},
+  {t:'Contacto',f:[{k:'direccion',l:'Dirección'},{k:'telefono',l:'Teléfono'},{k:'email',l:'Correo electrónico'}]},
+  {t:'Pasaporte',f:[{k:'pasaporte_num',l:'Número de pasaporte'},{k:'pasaporte_exp',l:'Fecha de vencimiento'}]},
+  {t:'Empleo',f:[{k:'ocupacion',l:'Ocupación'},{k:'empleador',l:'Empleador en México'},{k:'salario',l:'Salario mensual'},{k:'empleador_usa',l:'Empleador en EE.UU.'},{k:'puesto_usa',l:'Puesto en EE.UU.'},{k:'salario_usa',l:'Salario en EE.UU.'},{k:'profesion_tmec',l:'Profesión T-MEC'}]},
+  {t:'Viaje',f:[{k:'motivo_viaje',l:'Propósito del viaje'},{k:'destino_usa',l:'Destino en EE.UU.'},{k:'duracion_estancia',l:'Duración de estancia'},{k:'contacto_usa',l:'Contacto en EE.UU.'}]},
+  {t:'Historial migratorio',f:[{k:'ha_viajado_usa',l:'Ha visitado EE.UU.'},{k:'visa_previa',l:'Visa americana previa'},{k:'visa_rechazada',l:'Visa rechazada antes'},{k:'antecedentes',l:'Antecedentes penales'},{k:'relacion_titular',l:'Relación con titular TN'},{k:'titular_nombre',l:'Nombre titular TN'},{k:'titular_visa',l:'Visa TN del titular'}]}
+];
+
+let ca='turista',chk={turista:{},tn:{},td:{}},sti={turista:0,tn:0,td:0};
+let hist={turista:[],tn:[],td:[]},cid={turista:null,tn:null,td:null};
+let ds={turista:{},tn:{},td:{}},loading=false,dbf='all',curMid=null;
+
+function lc(){try{return JSON.parse(localStorage.getItem(DBKEY)||'[]')}catch{return[]}}
+function sc(d){try{localStorage.setItem(DBKEY,JSON.stringify(d))}catch(e){}}
+function ubdg(){document.getElementById('tbdg').textContent=lc().length}
+
+function showPage(p){
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(e=>e.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if(p==='ag')document.querySelectorAll('.ntab')[0].classList.add('active');
+  else{document.querySelectorAll('.ntab')[1].classList.add('active');rdb();}
+}
+
+function sw(a){
+  ca=a;
+  document.querySelectorAll('.atab').forEach((t,i)=>t.classList.toggle('active',['turista','tn','td'][i]===a));
+  rsb();rchdr();rmsgs();rqa();
+}
+
+function rchdr(){
+  const a=AGENTS[ca];
+  document.getElementById('chdr').innerHTML=`
+    <div class="aav" style="background:${a.bg}">${a.emoji}</div>
+    <div class="chi"><p>${a.name}</p><small>${a.desc}</small></div>
+    <span class="svi" id="svi">✓ Guardado</span>
+    <button class="ds-btn" onclick="openDSModal()">📋 DS-160</button>`;
+}
+
+function rsb(){
+  const a=AGENTS[ca],k=ca,si=sti[k];
+  document.getElementById('sb').innerHTML=`
+    <div class="sbs">
+      <div class="sbl">Estado del trámite</div>
+      ${a.status.map((s,i)=>`<div class="sst ${i<si?'done':i===si?'cur':''}"><div class="sdot"></div><span>${s}</span></div>`).join('')}
+      <div class="sbbtns"><button class="sbbtn" onclick="pst()">← Atrás</button><button class="sbbtn" onclick="nst()">Avanzar →</button></div>
+    </div>
+    <div class="sbs" style="flex:1">
+      <div class="sbl">Checklist documentos</div>
+      ${a.checklist.map((c,i)=>`<div class="cli ${chk[k][i]?'done':''}" onclick="tck(${i})"><div class="clb"></div><span>${c}</span></div>`).join('')}
+    </div>`;
+}
+
+function tck(i){chk[ca][i]=!chk[ca][i];rsb();asave();}
+function nst(){const k=ca;if(sti[k]<AGENTS[k].status.length-1){sti[k]++;rsb();asave();}}
+function pst(){const k=ca;if(sti[k]>0){sti[k]--;rsb();asave();}}
+
+function fmt(t){
+  return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/^- (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>')
+    .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+}
+
+function rmsgs(){
+  const m=hist[ca],c=document.getElementById('msgs');
+  if(!m.length){
+    const a=AGENTS[ca];
+    c.innerHTML=`<div style="text-align:center;padding:2rem 1rem;color:var(--mt)">
+      <div style="font-size:30px;margin-bottom:8px">${a.emoji}</div>
+      <p style="font-size:14px;font-weight:500;color:var(--tx);margin-bottom:4px">${a.name}</p>
+      <p style="font-size:12px">Escribe "nuevo caso" para comenzar.</p></div>`;return;
+  }
+  c.innerHTML=m.map(msg=>{
+    const clean=msg.content.replace(/<DS160>[\s\S]*?<\/DS160>/g,'').trim();
+    if(msg.role==='assistant'){
+      const a=AGENTS[ca];
+      return `<div class="msg ag"><div class="mav" style="background:${a.bg}">${a.emoji}</div><div class="mb">${fmt(clean)}</div></div>`;
+    }
+    return `<div class="msg us"><div class="mav" style="background:#eae8e2">👤</div><div class="mb">${clean}</div></div>`;
+  }).join('');
+  c.scrollTop=c.scrollHeight;
+}
+
+function rqa(){
+  document.getElementById('qabar').innerHTML=AGENTS[ca].qa.map(q=>`<button class="qa" onclick="sendQ('${q}')">${q}</button>`).join('');
+}
+
+async function sendQ(t){document.getElementById('inp').value=t;await snd();}
+
+async function snd(){
+  const inp=document.getElementById('inp');
+  const text=inp.value.trim();
+  if(!text||loading)return;
+  inp.value='';inp.style.height='auto';
+  const k=ca;
+  hist[k].push({role:'user',content:text});
+  if(!cid[k]){cid[k]='c'+Date.now()+'_'+k;initCase(k);}
+  rmsgs();
+  const tid=shtyp();loading=true;
+  try{
+    const r=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system:AGENTS[k].prompt,messages:hist[k].map(m=>({role:m.role,content:m.content}))})
+    });
+    const data=await r.json();
+    if(!r.ok)throw new Error(data.error||'Error del servidor');
+    const reply=data.text||'Sin respuesta.';
+    rmtyp(tid);
+    hist[k].push({role:'assistant',content:reply});
+    parseDS(k,reply);
+    rmsgs();asave();
+  }catch(e){
+    rmtyp(tid);
+    hist[k].push({role:'assistant',content:'Error: '+e.message});
+    rmsgs();
+  }
+  loading=false;
+}
+
+function shtyp(){
+  const id='t'+Date.now(),a=AGENTS[ca];
+  const d=document.createElement('div');d.className='msg ag';d.id=id;
+  d.innerHTML=`<div class="mav" style="background:${a.bg}">${a.emoji}</div><div class="mb"><div class="tdots"><span></span><span></span><span></span></div></div>`;
+  const c=document.getElementById('msgs');c.appendChild(d);c.scrollTop=c.scrollHeight;return id;
+}
+function rmtyp(id){document.getElementById(id)?.remove();}
+function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();snd();}}
+function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px';}
+
+function parseDS(k,text){
+  const m=text.match(/<DS160>([\s\S]*?)<\/DS160>/);
+  if(!m)return;
+  try{const p=JSON.parse(m[1]);Object.entries(p).forEach(([key,val])=>{if(val&&val!=='')ds[k][key]=val;});}catch(e){}
+}
+
+function dsHTML(data){
+  let html='';
+  DS_SECS.forEach(sec=>{
+    const vf=sec.f.filter(f=>data[f.k]);
+    if(!vf.length)return;
+    html+=`<div class="dss"><div class="dst">📋 ${sec.t}</div><div class="dsgrid">`;
+    vf.forEach(f=>{html+=`<div class="dsf"><label>${f.l}</label><div class="dsv">${data[f.k]}</div></div>`;});
+    html+='</div></div>';
+  });
+  return html||'<div class="cempty">Sin datos DS-160. Usa el agente para recopilar información del cliente.</div>';
+}
+
+function openDSModal(){
+  const k=ca,data=ds[k]||{};
+  curMid=null;
+  document.getElementById('mtitle').textContent='DS-160 — '+AGENTS[k].name;
+  document.getElementById('pdfbtn').style.display='flex';
+  const filled=Object.values(data).filter(v=>v).length;
+  const pct=Math.min(100,Math.round((filled/20)*100));
+  document.getElementById('mbody').innerHTML=`
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span style="font-size:12px;color:var(--mt)">${filled} campos completados</span>
+      <span style="font-size:12px;font-weight:500;color:var(--teal)">${pct}%</span>
+    </div>
+    <div style="height:5px;background:var(--bg);border-radius:3px;overflow:hidden;margin-bottom:8px">
+      <div style="height:100%;width:${pct}%;background:var(--teal);border-radius:3px"></div>
+    </div>
+    ${dsHTML(data)}`;
+  document.getElementById('ov').classList.add('open');
+}
+
+function dlPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  let k=ca,data=ds[k]||{},ck=chk[k]||{},si=sti[k]||0;
+  if(curMid){const c=lc().find(x=>x.id===curMid);if(c){k=c.visa;data=c.ds||{};ck=c.chk||{};si=c.si||0;}}
+  const pw=210,mg=18,cw=pw-mg*2;let y=mg;
+  doc.setFillColor(8,80,65);doc.rect(0,0,pw,26,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(255,255,255);
+  doc.text('VÍA GLOBAL — Formulario DS-160',mg,11);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('Vía Global Immigration & Visa Consulting | Uso interno del gestor',mg,17);
+  doc.text('Generado: '+new Date().toLocaleDateString('es-MX')+' '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),mg,22);
+  y=33;
+  const addSec=(title,fields)=>{
+    const rows=fields.filter(f=>data[f.k]);if(!rows.length)return;
+    if(y>255){doc.addPage();y=mg;}
+    doc.setFillColor(225,245,238);doc.rect(mg,y,cw,6.5,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(8,80,65);
+    doc.text(title.toUpperCase(),mg+3,y+4.5);y+=9;
+    for(let i=0;i<rows.length;i+=2){
+      if(y>268){doc.addPage();y=mg;}
+      const hw=(cw-6)/2;
+      [0,1].forEach(j=>{
+        if(!rows[i+j])return;
+        const x=mg+(j*(hw+6));
+        doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(107,106,102);
+        doc.text(rows[i+j].l,x,y);
+        doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(26,26,24);
+        doc.text(doc.splitTextToSize(String(rows[i+j].v||''),hw),x,y+4);
+      });
+      y+=12;
+    }
+    y+=2;
+  };
+  DS_SECS.forEach(s=>addSec(s.t,s.f));
+  if(y>240){doc.addPage();y=mg;}
+  doc.setFillColor(225,245,238);doc.rect(mg,y,cw,6.5,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(8,80,65);
+  doc.text('CHECKLIST DE DOCUMENTOS',mg+3,y+4.5);y+=9;
+  AGENTS[k].checklist.forEach((item,i)=>{
+    if(y>272){doc.addPage();y=mg;}
+    const done=ck[i];
+    doc.setFont('helvetica',done?'bold':'normal');doc.setFontSize(8.5);
+    doc.setTextColor(done?15:140,done?110:106,done?86:102);
+    doc.text((done?'[x] ':'[ ] ')+item,mg+3,y);y+=5.5;
+  });
+  y+=4;if(y>250){doc.addPage();y=mg;}
+  doc.setFillColor(225,245,238);doc.rect(mg,y,cw,6.5,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(8,80,65);
+  doc.text('ESTADO DEL TRÁMITE',mg+3,y+4.5);y+=9;
+  AGENTS[k].status.forEach((s,i)=>{
+    if(y>272){doc.addPage();y=mg;}
+    doc.setFont('helvetica',i===si?'bold':'normal');doc.setFontSize(8.5);
+    doc.setTextColor(i<si?15:i===si?186:140,i<si?110:i===si?117:106,i<si?86:i===si?23:102);
+    doc.text((i<si?'[v] ':i===si?'[>] ':'[ ] ')+s,mg+3,y);y+=5.5;
+  });
+  const pages=doc.getNumberOfPages();
+  for(let p=1;p<=pages;p++){
+    doc.setPage(p);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(168,166,160);
+    doc.text('Vía Global Immigration & Visa Consulting — Confidencial',mg,292);
+    doc.text('Pág. '+p+'/'+pages,pw-mg,292,'right');
+  }
+  const nm=data.apellido||data.nombre||'cliente';
+  doc.save('DS160_'+nm+'_'+k+'_'+new Date().toLocaleDateString('es-MX').replace(/\//g,'-')+'.pdf');
+}
+
+function initCase(k){
+  const cases=lc();
+  cases.push({id:cid[k],visa:k,name:'Caso nuevo',date:new Date().toLocaleDateString('es-MX'),ts:Date.now(),si:0,chk:{},hist:[],ds:{},dspct:0,outcome:'active'});
+  sc(cases);ubdg();
+}
+
+function asave(){
+  const k=ca;if(!cid[k])return;
+  const cases=lc();const idx=cases.findIndex(c=>c.id===cid[k]);if(idx===-1)return;
+  if(ds[k].nombre&&ds[k].apellido)cases[idx].name=ds[k].nombre+' '+ds[k].apellido;
+  else if(ds[k].nombre)cases[idx].name=ds[k].nombre;
+  cases[idx].si=sti[k];cases[idx].chk={...chk[k]};cases[idx].hist=[...hist[k]];cases[idx].ds={...ds[k]};
+  const filled=Object.values(ds[k]).filter(v=>v).length;
+  cases[idx].dspct=Math.min(100,Math.round((filled/20)*100));
+  const lt=hist[k].slice(-3).map(m=>m.content.toLowerCase()).join(' ');
+  if(lt.includes('aprobad'))cases[idx].outcome='approved';
+  else if(lt.includes('rechazad'))cases[idx].outcome='rejected';
+  sc(cases);ubdg();
+  const sv=document.getElementById('svi');
+  if(sv){sv.classList.add('on');setTimeout(()=>sv.classList.remove('on'),1800);}
+}
+
+function setF(f){
+  dbf=f;
+  document.querySelectorAll('.fltbtn').forEach(b=>b.classList.toggle('on',b.dataset.f===f));
+  rdb();
+}
+
+function rdb(){
+  const cases=lc();
+  const srch=(document.getElementById('dbsrch')?.value||'').toLowerCase();
+  const filt=cases.filter(c=>(dbf==='all'||c.visa===dbf)&&(!srch||(c.name||'').toLowerCase().includes(srch)));
+  const secs=dbf==='all'?['turista','tn','td']:[dbf];
+  const labels={turista:'✈ Visa Turista B1/B2',tn:'💼 Visa TN',td:'👨‍👩‍👧 Visa TD'};
+  const bcs={turista:'bt',tn:'bn',td:'bdd'};
+  const cols={turista:'#1D9E75',tn:'#378ADD',td:'#7F77DD'};
+  let html='';
+  secs.forEach(v=>{
+    const vc=filt.filter(c=>c.visa===v).sort((a,b)=>b.ts-a.ts);
+    html+=`<div class="dbsec"><div class="dbsech"><span class="vbdg ${bcs[v]}">${labels[v]}</span><span class="dbcc">${vc.length} caso${vc.length!==1?'s':''}</span></div>`;
+    if(!vc.length){html+=`<div class="cempty">Sin casos de ${labels[v]}.</div>`;}
+    else{
+      html+='<div class="cgrid">';
+      vc.forEach(c=>{
+        const ms=AGENTS[v].status.length-1;
+        const pct=Math.round((Math.min(c.si||0,ms)/ms)*100);
+        const cl=c.outcome==='approved'?'sd':c.outcome==='rejected'?'sr':'sa';
+        const ol=c.outcome==='approved'?'Aprobado':c.outcome==='rejected'?'Rechazado':'En proceso';
+        const dc=Object.values(c.chk||{}).filter(Boolean).length;
+        const dt=AGENTS[v].checklist.length;
+        html+=`<div class="ccard" onclick="openCase('${c.id}')">
+          <button class="cdel" onclick="delc(event,'${c.id}')">✕</button>
+          <div class="ctop"><div><div class="cname">${c.name||'Caso nuevo'}</div><div class="cdate">${c.date}</div></div><span class="cstat ${cl}">${ol}</span></div>
+          <div class="cprog"><div class="cprogf" style="width:${pct}%;background:${cols[v]}"></div></div>
+          <div class="cmeta"><span>${AGENTS[v].status[Math.min(c.si||0,ms)]}</span><span>${dc}/${dt} docs</span><span style="margin-left:auto;color:${(c.dspct||0)>50?'var(--teal)':'var(--ht)'}">DS-160 ${c.dspct||0}%</span></div>
+        </div>`;
+      });
+      html+='</div>';
+    }
+    html+='</div>';
+  });
+  document.getElementById('dbcnt').innerHTML=html||'<div class="cempty">Sin casos.</div>';
+}
+
+function openCase(id){
+  const c=lc().find(x=>x.id===id);if(!c)return;
+  curMid=id;const a=AGENTS[c.visa];const data=c.ds||{};
+  document.getElementById('mtitle').textContent=(c.name||'Caso')+' — '+c.visa.toUpperCase();
+  document.getElementById('pdfbtn').style.display='flex';
+  const filled=Object.values(data).filter(v=>v).length;
+  const pct=Math.min(100,Math.round((filled/20)*100));
+  const clhtml=a.checklist.map((d,i)=>`<div class="cli ${c.chk?.[i]?'done':''}" style="cursor:default"><div class="clb"></div><span>${d}</span></div>`).join('');
+  const msgshtml=(c.hist||[]).map(m=>{
+    const clean=m.content.replace(/<DS160>[\s\S]*?<\/DS160>/g,'').trim();
+    return `<div class="chmsg"><div class="role ${m.role==='user'?'ur':''}">${m.role==='user'?'👤 Gestor':`${a.emoji} Agente`}</div><div>${fmt(clean)}</div></div>`;
+  }).join('');
+  document.getElementById('mbody').innerHTML=`
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span style="font-size:12px;color:var(--mt)">DS-160: ${filled} campos</span>
+      <span style="font-size:12px;font-weight:500;color:var(--teal)">${pct}%</span>
+    </div>
+    <div style="height:5px;background:var(--bg);border-radius:3px;overflow:hidden;margin-bottom:10px">
+      <div style="height:100%;width:${pct}%;background:var(--teal);border-radius:3px"></div>
+    </div>
+    ${dsHTML(data)}
+    <div class="dss"><div class="dst">📁 Checklist documentos</div>${clhtml}</div>
+    <div class="dss"><div class="dst">💬 Conversación (${(c.hist||[]).length} mensajes)</div>${msgshtml||'<p style="font-size:12px;color:var(--mt)">Sin mensajes.</p>'}</div>`;
+  document.getElementById('ov').classList.add('open');
+}
+
+function delc(e,id){e.stopPropagation();if(!confirm('¿Eliminar este caso?'))return;sc(lc().filter(c=>c.id!==id));ubdg();rdb();}
+function clov(e){if(e.target.id==='ov')clovd();}
+function clovd(){document.getElementById('ov').classList.remove('open');curMid=null;}
+
+sw('turista');ubdg();
+</script>
+</body>
+</html>
