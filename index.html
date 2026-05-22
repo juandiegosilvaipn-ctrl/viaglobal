@@ -424,7 +424,9 @@ function openDSModal(){
   document.getElementById('ov').classList.add('open');
 }
 
-function dlPDF(){
+function dlPDF(){console.log('ca:', ca);
+console.log('ds[ca]:', JSON.stringify(ds[ca]));
+console.log('curMid:', curMid);
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
   let k=ca,data={},ck={},si=0;
