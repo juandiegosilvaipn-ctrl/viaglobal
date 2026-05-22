@@ -570,7 +570,7 @@ async function openCase(id){
   const clhtml=a.checklist.map((d,i)=>`<div class="cli ${c.checklist?.[i]?'done':''}" style="cursor:default"><div class="clb"></div><span>${d}</span></div>`).join('');
   const msgshtml=(c.historial||[]).map(m=>{
     const clean=m.content.replace(/<DS160>[\s\S]*?<\/DS160>/g,'').trim();
-    return `<div class="chmsg"><div class="role ${m.role==='user'?'ur':''}">${m.role==='user'?'👤 Gestor':`${a.emoji} Agente`}</div><div>${fmt(clean)}</div></div>`;
+    return `<div class="chmsg"><div class="role ${m.role==='user'?'ur':''}">${m.role==='user'?'👤 Cliente':`${a.emoji} Agente`}</div>
   }).join('');
   document.getElementById('mbody').innerHTML=`
     <div style="display:flex;justify-content:space-between;margin-bottom:4px">
