@@ -552,7 +552,8 @@ async function rdb(){
           <button class="cdel" onclick="delc(event,'${c.id}')">✕</button>
           <div class="ctop"><div><div class="cname">${c.nombre||'Caso nuevo'}</div><div class="cdate">${c.fecha||''}</div></div><span class="cstat ${cl}">${ol}</span></div>
           <div class="cprog"><div class="cprogf" style="width:${pct}%;background:${cols[v]}"></div></div>
-          <div class="cmeta"><span>${AGENTS[v].status[Math.min(c.estado_tramite||0,ms)]}</span><span>${dc}/${dt} docs</span><span style="margin-left:auto;color:${(c.ds160_pct||0)>50?'var(--teal)':'var(--ht)'}">DS-160 ${c.ds160_pct||0}%</span></div>
+<div class="cmeta"><span>${AGENTS[v].status[Math.min(c.estado_tramite||0,ms)]}</span><span>${dc}/${dt} docs</span><span style="margin-left:auto;color:${(c.ds160_pct||0)>50?'var(--teal)':'var(--ht)'}">DS-160 ${c.ds160_pct||0}%</span></div>
+<button onclick="event.stopPropagation();verDS160('${c.id}')" style="margin-top:8px;width:100%;padding:6px;background:var(--gl);border:1px solid var(--gold);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;color:var(--gold);cursor:pointer;">📋 Ver DS-160</button>
         </div>`;
       });
       html+='</div>';
@@ -597,7 +598,35 @@ async function delc(e,id){
   rdb();
 }
 
-function clov(e){if(e.target.id==='ov')clovd();}
+async function verDS160(id){
+  const {data:c}=await db.from('casos').select('*').eq('id',id).single();
+  if(!c)return;
+  curMid=id;
+  const data=c.ds160||{};
+  document.getElementById('mtitle').textContent='DS-160 — '+(c.nombre||'Caso');
+  document.getElementById('pdfbtn').style.display='none';
+  const filled=Object.values(data).filter(v=>v).length;
+  const pct=Math.min(100,Math.round((filled/20)*100));
+  let html=`<div style="display:flex;justify-content:space-between;margin-bottom:4px">
+    <span style="font-size:12px;color:var(--mt)">${filled} campos completados</span>
+    <span style="font-size:12px;font-weight:500;color:var(--teal)">${pct}%</span>
+  </div>
+  <div style="height:5px;background:var(--bg);border-radius:3px;overflow:hidden;margin-bottom:12px">
+    <div style="height:100%;width:${pct}%;background:var(--teal);border-radius:3px"></div>
+  </div>`;
+  DS_SECS.forEach(sec=>{
+    const vf=sec.f.filter(f=>data[f.k]);
+    if(!vf.length)return;
+    html+=`<div class="dss"><div class="dst">📋 ${sec.t}</div><div class="dsgrid">`;
+    vf.forEach(f=>{html+=`<div class="dsf"><label>${f.l}</label><div class="dsv">${data[f.k]}</div></div>`;});
+    html+='</div></div>';
+  });
+  if(!Object.values(data).filter(v=>v).length){
+    html+='<div class="cempty">Sin datos DS-160 para este caso aún.</div>';
+  }
+  document.getElementById('mbody').innerHTML=html;
+  document.getElementById('ov').classList.add('open');
+}
 function clovd(){document.getElementById('ov').classList.remove('open');curMid=null;}
 
 sw('turista');dbCount();
