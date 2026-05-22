@@ -507,9 +507,9 @@ async function asave(){
     ds160_pct:Math.min(100,Math.round((filled/20)*100)),
   };
   if(nombre)update.nombre=nombre;
-  const lt=hist[k].slice(-3).map(m=>m.content.toLowerCase()).join(' ');
-  if(lt.includes('aprobad'))update.resultado='approved';
-  else if(lt.includes('rechazad'))update.resultado='rejected';
+  const lt=hist[k].slice(-3).filter(m=>m.role==='user').map(m=>m.content.toLowerCase()).join(' ');
+if(lt.includes('visa aprobada'))update.resultado='approved';
+else if(lt.includes('visa rechazada'))update.resultado='rejected';
   await db.from('casos').update(update).eq('id',cid[k]);
   await dbCount();
   const sv=document.getElementById('svi');
