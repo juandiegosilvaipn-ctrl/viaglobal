@@ -428,7 +428,7 @@ function dlPDF(){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
   let k=ca,data=ds[k]||{},ck=chk[k]||{},si=sti[k]||0;
-  if(curMid){const cases=window._cases||[];const c=cases.find(x=>x.id===curMid);if(c){k=c.visa;data=c.ds160||{};ck=c.checklist||{};si=c.estado_tramite||0;}}
+ if(curMid){const cases=window._cases||[];const c=cases.find(x=>x.id===curMid);if(c){k=c.visa;data=c.ds160||ds[k]||{};ck=c.checklist||chk[k]||{};si=c.estado_tramite||sti[k]||0;}}else{data=ds[k]||{};ck=chk[k]||{};si=sti[k]||0;}
   const pw=210,mg=18,cw=pw-mg*2;let y=mg;
   doc.setFillColor(8,80,65);doc.rect(0,0,pw,26,'F');
   doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(255,255,255);
