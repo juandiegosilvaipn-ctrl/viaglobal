@@ -545,7 +545,7 @@ async function rdb(){
         const ms=AGENTS[v].status.length-1;
         const pct=Math.round((Math.min(c.estado_tramite||0,ms)/ms)*100);
         const cl=c.resultado==='approved'?'sd':c.resultado==='rejected'?'sr':'sa';
-        const ol=c.resultado==='approved'?'Aprobado':c.resultado==='rejected'?'Rechazado':'En proceso';
+const ol='En proceso';
         const dc=Object.values(c.checklist||{}).filter(Boolean).length;
         const dt=AGENTS[v].checklist.length;
         html+=`<div class="ccard" onclick="openCase('${c.id}')">
