@@ -424,17 +424,20 @@ function openDSModal(){
   document.getElementById('ov').classList.add('open');
 }
 
-async function dlPDF(){
+function dlPDF(){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
   let k=ca,data={},ck={},si=0;
   if(curMid){
-    const {data:row}=await db.from('casos').select('*').eq('id',curMid).single();
-    if(row){k=row.visa;data=row.ds160||{};ck=row.checklist||{};si=row.estado_tramite||0;}
-  } else if(cid[ca]){
-    const {data:row}=await db.from('casos').select('*').eq('id',cid[ca]).single();
-    if(row){k=row.visa;data=row.ds160||{};ck=row.checklist||{};si=row.estado_tramite||0;}
+    const cases=window._cases||[];
+    const c=cases.find(x=>x.id===curMid);
+    if(c){k=c.visa;data=c.ds160||{};ck=c.checklist||{};si=c.estado_tramite||0;}
+  } else {
+    data=JSON.parse(JSON.stringify(ds[k]||{}));
+    ck=JSON.parse(JSON.stringify(chk[k]||{}));
+    si=sti[k]||0;
   }
+ if(curMid){const cases=window._cases||[];const c=cases.find(x=>x.id===curMid);if(c){k=c.visa;data=c.ds160||ds[k]||{};ck=c.checklist||chk[k]||{};si=c.estado_tramite||sti[k]||0;}}else{data=ds[k]||{};ck=chk[k]||{};si=sti[k]||0;}
   const pw=210,mg=18,cw=pw-mg*2;let y=mg;
   doc.setFillColor(8,80,65);doc.rect(0,0,pw,26,'F');
   doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(255,255,255);
@@ -507,9 +510,9 @@ async function asave(){
     ds160_pct:Math.min(100,Math.round((filled/20)*100)),
   };
   if(nombre)update.nombre=nombre;
-  const lt=hist[k].slice(-3).filter(m=>m.role==='user').map(m=>m.content.toLowerCase()).join(' ');
-if(lt.includes('visa aprobada'))update.resultado='approved';
-else if(lt.includes('visa rechazada'))update.resultado='rejected';
+  const lt=hist[k].slice(-3).map(m=>m.content.toLowerCase()).join(' ');
+  if(lt.includes('aprobad'))update.resultado='approved';
+  else if(lt.includes('rechazad'))update.resultado='rejected';
   await db.from('casos').update(update).eq('id',cid[k]);
   await dbCount();
   const sv=document.getElementById('svi');
@@ -570,7 +573,7 @@ async function openCase(id){
   const clhtml=a.checklist.map((d,i)=>`<div class="cli ${c.checklist?.[i]?'done':''}" style="cursor:default"><div class="clb"></div><span>${d}</span></div>`).join('');
   const msgshtml=(c.historial||[]).map(m=>{
     const clean=m.content.replace(/<DS160>[\s\S]*?<\/DS160>/g,'').trim();
-    return `<div class="chmsg"><div class="role ${m.role==='user'?'ur':''}">${m.role==='user'?'👤 Cliente':`${a.emoji} Agente`}</div>
+    return `<div class="chmsg"><div class="role ${m.role==='user'?'ur':''}">${m.role==='user'?'👤 Gestor':`${a.emoji} Agente`}</div><div>${fmt(clean)}</div></div>`;
   }).join('');
   document.getElementById('mbody').innerHTML=`
     <div style="display:flex;justify-content:space-between;margin-bottom:4px">
