@@ -6,6 +6,7 @@
 <title>Vía Global — Panel Gestor</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -137,18 +138,19 @@ nav{background:var(--tdd);display:flex;align-items:center;flex-shrink:0;padding:
 .chmsg:last-child{border:none}
 .chmsg .role{font-weight:500;font-size:10px;color:var(--td);margin-bottom:2px;text-transform:uppercase;letter-spacing:.05em}
 .chmsg .role.ur{color:var(--bd)}
+.sync-indicator{font-size:11px;color:rgba(255,255,255,.5);margin-left:auto;display:flex;align-items:center;gap:4px}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:#4ade80}
 @media(max-width:580px){.sb{display:none}.dsgrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <nav>
-  <div class="nav-logo">
-    <img src="/logo.png" alt="Vía Global">
-  </div>
+  <div class="nav-logo"><img src="/public/logo.png" alt="Vía Global"></div>
   <div class="ntabs">
     <div class="ntab active" onclick="showPage('ag')">🤖 Agentes</div>
-    <div class="ntab" onclick="showPage('db')">🗄 Base de datos <span class="nbadge" id="tbdg">0</span></div>
+    <div class="ntab" onclick="showPage('db')">🗄 CRM <span class="nbadge" id="tbdg">0</span></div>
   </div>
+  <div class="sync-indicator" id="sync-ind"><div class="sync-dot"></div><span>Conectado</span></div>
 </nav>
 
 <div class="page active" id="page-ag">
@@ -176,14 +178,14 @@ nav{background:var(--tdd);display:flex;align-items:center;flex-shrink:0;padding:
 
 <div class="page dbp" id="page-db">
   <div class="dbhdr">
-    <h2>Base de datos de casos</h2>
+    <h2>CRM — Base de datos</h2>
     <input class="dbsrch" id="dbsrch" placeholder="Buscar cliente..." oninput="rdb()">
     <button class="fltbtn on" data-f="all" onclick="setF('all')">Todos</button>
     <button class="fltbtn" data-f="turista" onclick="setF('turista')">✈ Turista</button>
     <button class="fltbtn" data-f="tn" onclick="setF('tn')">💼 TN</button>
     <button class="fltbtn" data-f="td" onclick="setF('td')">👨‍👩‍👧 TD</button>
   </div>
-  <div class="dbcnt" id="dbcnt"></div>
+  <div class="dbcnt" id="dbcnt"><div class="cempty">Cargando casos...</div></div>
 </div>
 
 <div class="ov" id="ov" onclick="clov(event)">
@@ -200,8 +202,37 @@ nav{background:var(--tdd);display:flex;align-items:center;flex-shrink:0;padding:
 </div>
 
 <script>
-const DBKEY='vg_v3';
-const AGENTS={
+// ── SUPABASE ──────────────────────────────────────────────────────
+const SUPA_URL = 'https://mrmphgiqojbzgzcqogui.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ybXBoZ2lxb2piemd6Y3FvZ3VpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MzM5ODUsImV4cCI6MjA5NTAwOTk4NX0.AErFjZkcCw2inqnlvziF_ozfpXJ4o1SLZwonmTzUNQs';
+const { createClient } = supabase;
+const db = createClient(SUPA_URL, SUPA_KEY);
+
+async function dbGet() {
+  const { data, error } = await db.from('casos').select('*').order('created_at', { ascending: false });
+  if (error) { console.error(error); return []; }
+  return data || [];
+}
+
+async function dbSave(caso) {
+  if (caso.id) {
+    const { error } = await db.from('casos').upsert(caso);
+    if (error) console.error('Save error:', error);
+  }
+}
+
+async function dbDelete(id) {
+  const { error } = await db.from('casos').delete().eq('id', id);
+  if (error) console.error('Delete error:', error);
+}
+
+async function dbCount() {
+  const { count } = await db.from('casos').select('*', { count: 'exact', head: true });
+  document.getElementById('tbdg').textContent = count || 0;
+}
+
+// ── AGENTS ───────────────────────────────────────────────────────
+const AGENTS = {
   turista:{name:'Agente Turista B1/B2',emoji:'✈',bg:'#E1F5EE',color:'#1D9E75',desc:'Especialista en visa de turista',
     checklist:['Pasaporte vigente (+6 meses)','Pasaporte anterior','Foto fondo blanco','Acta de nacimiento','Carta laboral con sueldo','Estados de cuenta 3 meses','Comprobante de domicilio','Escrituras / propiedad','Actas matrimonio/hijos','Itinerario o vuelo','Reserva de hotel','Carta de invitación','DS-160 completado','Pago MRV fee','Cita consular agendada'],
     status:['Evaluación aprobada','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
@@ -209,7 +240,7 @@ const AGENTS={
     prompt:`Eres el Agente Turista de Vía Global, gestoría de visas. Ayudas al gestor con casos de visa B1/B2.
 Cuando tengas datos del cliente, incluye al final de tu respuesta:
 <DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","motivo_viaje":"","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
-Actualiza el JSON con cada nuevo dato. Recopila información del cliente con preguntas naturales, genera checklist dinámico, prepara entrevista consular, advierte riesgos. Habla en español de México. Sé conciso.`},
+Actualiza el JSON con cada nuevo dato. Recopila datos del cliente con preguntas naturales, genera checklist, prepara entrevista consular, advierte riesgos. Habla en español de México.`},
   tn:{name:'Agente Visa TN',emoji:'💼',bg:'#E6F1FB',color:'#378ADD',desc:'Especialista en visa TN — T-MEC',
     checklist:['Pasaporte vigente','Foto fondo blanco','Título universitario','Cédula profesional','CV en inglés','Certificaciones','Carta oferta empleador USA','Descripción del puesto','EIN del empleador','Profesión verificada T-MEC','DS-160 completado','Pago MRV fee','Cita consular agendada'],
     status:['Evaluación aprobada','Profesión verificada T-MEC','Carta oferta validada','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
@@ -217,7 +248,7 @@ Actualiza el JSON con cada nuevo dato. Recopila información del cliente con pre
     prompt:`Eres el Agente TN de Vía Global. Ayudas al gestor con visas TN bajo el T-MEC.
 Cuando tengas datos, incluye al final:
 <DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","empleador_usa":"","puesto_usa":"","salario_usa":"","profesion_tmec":"","motivo_viaje":"Trabajo temporal TN","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
-Verifica que la profesión esté en la lista T-MEC. Valida la carta oferta (puesto, salario, duración, EIN). Recopila datos, prepara entrevista. Habla en español de México.`},
+Verifica que la profesión esté en la lista T-MEC. Valida carta oferta (puesto, salario, duración, EIN). Habla en español de México.`},
   td:{name:'Agente Visa TD',emoji:'👨‍👩‍👧',bg:'#EEEDFE',color:'#7F77DD',desc:'Especialista en visa TD — dependientes',
     checklist:['Pasaporte del dependiente','Foto fondo blanco','Acta de nacimiento dependiente','Acta de matrimonio (cónyuge)','Acta de nacimiento del titular','Copia de visa TN del titular','Carta de empleo del titular','DS-160 del dependiente','Pago MRV fee','Cita conjunta con titular'],
     status:['TN del titular verificado','Vínculo familiar documentado','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada con titular','Entrevista realizada','Visa aprobada'],
@@ -225,7 +256,7 @@ Verifica que la profesión esté en la lista T-MEC. Valida la carta oferta (pues
     prompt:`Eres el Agente TD de Vía Global. Ayudas al gestor con visas TD para dependientes de titulares TN.
 Cuando tengas datos, incluye al final:
 <DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","relacion_titular":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","titular_nombre":"","titular_visa":"","motivo_viaje":"Acompañar titular TN","destino_usa":"","duracion_estancia":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
-Verifica TN del titular (obligatorio). Recopila datos del dependiente. Coordina cita conjunta. El TD no da derecho a trabajar en EE.UU. Habla en español de México.`}
+Verifica TN del titular (obligatorio). El TD no da derecho a trabajar. Habla en español de México.`}
 };
 
 const DS_SECS=[
@@ -240,10 +271,6 @@ const DS_SECS=[
 let ca='turista',chk={turista:{},tn:{},td:{}},sti={turista:0,tn:0,td:0};
 let hist={turista:[],tn:[],td:[]},cid={turista:null,tn:null,td:null};
 let ds={turista:{},tn:{},td:{}},loading=false,dbf='all',curMid=null;
-
-function lc(){try{return JSON.parse(localStorage.getItem(DBKEY)||'[]')}catch{return[]}}
-function sc(d){try{localStorage.setItem(DBKEY,JSON.stringify(d))}catch(e){}}
-function ubdg(){document.getElementById('tbdg').textContent=lc().length}
 
 function showPage(p){
   document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
@@ -264,7 +291,7 @@ function rchdr(){
   document.getElementById('chdr').innerHTML=`
     <div class="aav" style="background:${a.bg}">${a.emoji}</div>
     <div class="chi"><p>${a.name}</p><small>${a.desc}</small></div>
-    <span class="svi" id="svi">✓ Guardado</span>
+    <span class="svi" id="svi">☁ Guardado</span>
     <button class="ds-btn" onclick="openDSModal()">📋 DS-160</button>`;
 }
 
@@ -326,7 +353,7 @@ async function snd(){
   inp.value='';inp.style.height='auto';
   const k=ca;
   hist[k].push({role:'user',content:text});
-  if(!cid[k]){cid[k]='c'+Date.now()+'_'+k;initCase(k);}
+  if(!cid[k]){await initCase(k);}
   rmsgs();
   const tid=shtyp();loading=true;
   try{
@@ -375,7 +402,7 @@ function dsHTML(data){
     vf.forEach(f=>{html+=`<div class="dsf"><label>${f.l}</label><div class="dsv">${data[f.k]}</div></div>`;});
     html+='</div></div>';
   });
-  return html||'<div class="cempty">Sin datos DS-160. Usa el agente para recopilar información del cliente.</div>';
+  return html||'<div class="cempty">Sin datos DS-160. Usa el agente para recopilar información.</div>';
 }
 
 function openDSModal(){
@@ -401,14 +428,14 @@ function dlPDF(){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
   let k=ca,data=ds[k]||{},ck=chk[k]||{},si=sti[k]||0;
-  if(curMid){const c=lc().find(x=>x.id===curMid);if(c){k=c.visa;data=c.ds||{};ck=c.chk||{};si=c.si||0;}}
+  if(curMid){const cases=window._cases||[];const c=cases.find(x=>x.id===curMid);if(c){k=c.visa;data=c.ds160||{};ck=c.checklist||{};si=c.estado_tramite||0;}}
   const pw=210,mg=18,cw=pw-mg*2;let y=mg;
   doc.setFillColor(8,80,65);doc.rect(0,0,pw,26,'F');
   doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(255,255,255);
   doc.text('VÍA GLOBAL — Formulario DS-160',mg,11);
   doc.setFontSize(8);doc.setFont('helvetica','normal');
-  doc.text('Vía Global Immigration & Visa Consulting | Uso interno del gestor',mg,17);
-  doc.text('Generado: '+new Date().toLocaleDateString('es-MX')+' '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),mg,22);
+  doc.text('Vía Global Immigration & Visa Consulting | Uso interno',mg,17);
+  doc.text('Generado: '+new Date().toLocaleDateString('es-MX'),mg,22);
   y=33;
   const addSec=(title,fields)=>{
     const rows=fields.filter(f=>data[f.k]);if(!rows.length)return;
@@ -432,27 +459,6 @@ function dlPDF(){
     y+=2;
   };
   DS_SECS.forEach(s=>addSec(s.t,s.f));
-  if(y>240){doc.addPage();y=mg;}
-  doc.setFillColor(225,245,238);doc.rect(mg,y,cw,6.5,'F');
-  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(8,80,65);
-  doc.text('CHECKLIST DE DOCUMENTOS',mg+3,y+4.5);y+=9;
-  AGENTS[k].checklist.forEach((item,i)=>{
-    if(y>272){doc.addPage();y=mg;}
-    const done=ck[i];
-    doc.setFont('helvetica',done?'bold':'normal');doc.setFontSize(8.5);
-    doc.setTextColor(done?15:140,done?110:106,done?86:102);
-    doc.text((done?'[x] ':'[ ] ')+item,mg+3,y);y+=5.5;
-  });
-  y+=4;if(y>250){doc.addPage();y=mg;}
-  doc.setFillColor(225,245,238);doc.rect(mg,y,cw,6.5,'F');
-  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(8,80,65);
-  doc.text('ESTADO DEL TRÁMITE',mg+3,y+4.5);y+=9;
-  AGENTS[k].status.forEach((s,i)=>{
-    if(y>272){doc.addPage();y=mg;}
-    doc.setFont('helvetica',i===si?'bold':'normal');doc.setFontSize(8.5);
-    doc.setTextColor(i<si?15:i===si?186:140,i<si?110:i===si?117:106,i<si?86:i===si?23:102);
-    doc.text((i<si?'[v] ':i===si?'[>] ':'[ ] ')+s,mg+3,y);y+=5.5;
-  });
   const pages=doc.getNumberOfPages();
   for(let p=1;p<=pages;p++){
     doc.setPage(p);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(168,166,160);
@@ -463,24 +469,43 @@ function dlPDF(){
   doc.save('DS160_'+nm+'_'+k+'_'+new Date().toLocaleDateString('es-MX').replace(/\//g,'-')+'.pdf');
 }
 
-function initCase(k){
-  const cases=lc();
-  cases.push({id:cid[k],visa:k,name:'Caso nuevo',date:new Date().toLocaleDateString('es-MX'),ts:Date.now(),si:0,chk:{},hist:[],ds:{},dspct:0,outcome:'active'});
-  sc(cases);ubdg();
+async function initCase(k){
+  const newCase={
+    visa:k,
+    nombre:'Caso nuevo',
+    fecha:new Date().toLocaleDateString('es-MX'),
+    estado_tramite:0,
+    checklist:{},
+    historial:[],
+    ds160:{},
+    ds160_pct:0,
+    resultado:'active'
+  };
+  const {data,error}=await db.from('casos').insert(newCase).select().single();
+  if(error){console.error(error);return;}
+  cid[k]=data.id;
+  await dbCount();
 }
 
-function asave(){
+async function asave(){
   const k=ca;if(!cid[k])return;
-  const cases=lc();const idx=cases.findIndex(c=>c.id===cid[k]);if(idx===-1)return;
-  if(ds[k].nombre&&ds[k].apellido)cases[idx].name=ds[k].nombre+' '+ds[k].apellido;
-  else if(ds[k].nombre)cases[idx].name=ds[k].nombre;
-  cases[idx].si=sti[k];cases[idx].chk={...chk[k]};cases[idx].hist=[...hist[k]];cases[idx].ds={...ds[k]};
-  const filled=Object.values(ds[k]).filter(v=>v).length;
-  cases[idx].dspct=Math.min(100,Math.round((filled/20)*100));
+  const data=ds[k]||{};
+  if(data.nombre&&data.apellido){}
+  const nombre=data.nombre&&data.apellido?data.nombre+' '+data.apellido:data.nombre||undefined;
+  const filled=Object.values(data).filter(v=>v).length;
+  const update={
+    estado_tramite:sti[k],
+    checklist:chk[k],
+    historial:hist[k],
+    ds160:ds[k],
+    ds160_pct:Math.min(100,Math.round((filled/20)*100)),
+  };
+  if(nombre)update.nombre=nombre;
   const lt=hist[k].slice(-3).map(m=>m.content.toLowerCase()).join(' ');
-  if(lt.includes('aprobad'))cases[idx].outcome='approved';
-  else if(lt.includes('rechazad'))cases[idx].outcome='rejected';
-  sc(cases);ubdg();
+  if(lt.includes('aprobad'))update.resultado='approved';
+  else if(lt.includes('rechazad'))update.resultado='rejected';
+  await db.from('casos').update(update).eq('id',cid[k]);
+  await dbCount();
   const sv=document.getElementById('svi');
   if(sv){sv.classList.add('on');setTimeout(()=>sv.classList.remove('on'),1800);}
 }
@@ -491,33 +516,34 @@ function setF(f){
   rdb();
 }
 
-function rdb(){
-  const cases=lc();
+async function rdb(){
+  const cases=await dbGet();
+  window._cases=cases;
   const srch=(document.getElementById('dbsrch')?.value||'').toLowerCase();
-  const filt=cases.filter(c=>(dbf==='all'||c.visa===dbf)&&(!srch||(c.name||'').toLowerCase().includes(srch)));
+  const filt=cases.filter(c=>(dbf==='all'||c.visa===dbf)&&(!srch||(c.nombre||'').toLowerCase().includes(srch)));
   const secs=dbf==='all'?['turista','tn','td']:[dbf];
   const labels={turista:'✈ Visa Turista B1/B2',tn:'💼 Visa TN',td:'👨‍👩‍👧 Visa TD'};
   const bcs={turista:'bt',tn:'bn',td:'bdd'};
   const cols={turista:'#1D9E75',tn:'#378ADD',td:'#7F77DD'};
   let html='';
   secs.forEach(v=>{
-    const vc=filt.filter(c=>c.visa===v).sort((a,b)=>b.ts-a.ts);
+    const vc=filt.filter(c=>c.visa===v);
     html+=`<div class="dbsec"><div class="dbsech"><span class="vbdg ${bcs[v]}">${labels[v]}</span><span class="dbcc">${vc.length} caso${vc.length!==1?'s':''}</span></div>`;
     if(!vc.length){html+=`<div class="cempty">Sin casos de ${labels[v]}.</div>`;}
     else{
       html+='<div class="cgrid">';
       vc.forEach(c=>{
         const ms=AGENTS[v].status.length-1;
-        const pct=Math.round((Math.min(c.si||0,ms)/ms)*100);
-        const cl=c.outcome==='approved'?'sd':c.outcome==='rejected'?'sr':'sa';
-        const ol=c.outcome==='approved'?'Aprobado':c.outcome==='rejected'?'Rechazado':'En proceso';
-        const dc=Object.values(c.chk||{}).filter(Boolean).length;
+        const pct=Math.round((Math.min(c.estado_tramite||0,ms)/ms)*100);
+        const cl=c.resultado==='approved'?'sd':c.resultado==='rejected'?'sr':'sa';
+        const ol=c.resultado==='approved'?'Aprobado':c.resultado==='rejected'?'Rechazado':'En proceso';
+        const dc=Object.values(c.checklist||{}).filter(Boolean).length;
         const dt=AGENTS[v].checklist.length;
         html+=`<div class="ccard" onclick="openCase('${c.id}')">
           <button class="cdel" onclick="delc(event,'${c.id}')">✕</button>
-          <div class="ctop"><div><div class="cname">${c.name||'Caso nuevo'}</div><div class="cdate">${c.date}</div></div><span class="cstat ${cl}">${ol}</span></div>
+          <div class="ctop"><div><div class="cname">${c.nombre||'Caso nuevo'}</div><div class="cdate">${c.fecha||''}</div></div><span class="cstat ${cl}">${ol}</span></div>
           <div class="cprog"><div class="cprogf" style="width:${pct}%;background:${cols[v]}"></div></div>
-          <div class="cmeta"><span>${AGENTS[v].status[Math.min(c.si||0,ms)]}</span><span>${dc}/${dt} docs</span><span style="margin-left:auto;color:${(c.dspct||0)>50?'var(--teal)':'var(--ht)'}">DS-160 ${c.dspct||0}%</span></div>
+          <div class="cmeta"><span>${AGENTS[v].status[Math.min(c.estado_tramite||0,ms)]}</span><span>${dc}/${dt} docs</span><span style="margin-left:auto;color:${(c.ds160_pct||0)>50?'var(--teal)':'var(--ht)'}">DS-160 ${c.ds160_pct||0}%</span></div>
         </div>`;
       });
       html+='</div>';
@@ -527,15 +553,16 @@ function rdb(){
   document.getElementById('dbcnt').innerHTML=html||'<div class="cempty">Sin casos.</div>';
 }
 
-function openCase(id){
-  const c=lc().find(x=>x.id===id);if(!c)return;
-  curMid=id;const a=AGENTS[c.visa];const data=c.ds||{};
-  document.getElementById('mtitle').textContent=(c.name||'Caso')+' — '+c.visa.toUpperCase();
+async function openCase(id){
+  const cases=window._cases||await dbGet();
+  const c=cases.find(x=>x.id===id);if(!c)return;
+  curMid=id;const a=AGENTS[c.visa];const data=c.ds160||{};
+  document.getElementById('mtitle').textContent=(c.nombre||'Caso')+' — '+c.visa.toUpperCase();
   document.getElementById('pdfbtn').style.display='flex';
   const filled=Object.values(data).filter(v=>v).length;
   const pct=Math.min(100,Math.round((filled/20)*100));
-  const clhtml=a.checklist.map((d,i)=>`<div class="cli ${c.chk?.[i]?'done':''}" style="cursor:default"><div class="clb"></div><span>${d}</span></div>`).join('');
-  const msgshtml=(c.hist||[]).map(m=>{
+  const clhtml=a.checklist.map((d,i)=>`<div class="cli ${c.checklist?.[i]?'done':''}" style="cursor:default"><div class="clb"></div><span>${d}</span></div>`).join('');
+  const msgshtml=(c.historial||[]).map(m=>{
     const clean=m.content.replace(/<DS160>[\s\S]*?<\/DS160>/g,'').trim();
     return `<div class="chmsg"><div class="role ${m.role==='user'?'ur':''}">${m.role==='user'?'👤 Gestor':`${a.emoji} Agente`}</div><div>${fmt(clean)}</div></div>`;
   }).join('');
@@ -548,16 +575,24 @@ function openCase(id){
       <div style="height:100%;width:${pct}%;background:var(--teal);border-radius:3px"></div>
     </div>
     ${dsHTML(data)}
-    <div class="dss"><div class="dst">📁 Checklist documentos</div>${clhtml}</div>
-    <div class="dss"><div class="dst">💬 Conversación (${(c.hist||[]).length} mensajes)</div>${msgshtml||'<p style="font-size:12px;color:var(--mt)">Sin mensajes.</p>'}</div>`;
+    <div class="dss"><div class="dst">📁 Checklist</div>${clhtml}</div>
+    <div class="dss"><div class="dst">💬 Conversación (${(c.historial||[]).length} mensajes)</div>${msgshtml||'<p style="font-size:12px;color:var(--mt)">Sin mensajes.</p>'}</div>`;
   document.getElementById('ov').classList.add('open');
 }
 
-function delc(e,id){e.stopPropagation();if(!confirm('¿Eliminar este caso?'))return;sc(lc().filter(c=>c.id!==id));ubdg();rdb();}
+async function delc(e,id){
+  e.stopPropagation();
+  if(!confirm('¿Eliminar este caso?'))return;
+  await dbDelete(id);
+  await dbCount();
+  rdb();
+}
+
 function clov(e){if(e.target.id==='ov')clovd();}
 function clovd(){document.getElementById('ov').classList.remove('open');curMid=null;}
 
-sw('turista');ubdg();
+sw('turista');dbCount();
 </script>
 </body>
 </html>
+
