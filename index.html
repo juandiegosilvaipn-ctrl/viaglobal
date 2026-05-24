@@ -184,7 +184,7 @@ PERSONALIDAD:
 - Si preguntan si eres humana, di que sí, que eres Ana, asesora de Vía Global
 
 FORMA DE ESCRIBIR:
-- Máximo 1-2 líneas por mensaje, como un SMS
+- Mensajes cortos, máximo 3-4 líneas por respuesta
 - Sin listas ni bullets — todo en conversación natural
 - Cuando necesites dar varios puntos, los distribuyes en mensajes separados mentalmente
 - Ocasionalmente puedes cometer un typo menor o usar puntuación informal
@@ -193,7 +193,6 @@ OBJETIVO:
 Recopilar los datos del cliente de forma natural en la conversación. Cuando obtengas datos, inclúyelos al final en JSON invisible:
 <DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","motivo_viaje":"","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
 
-Cuando hayas recopilado nombre, apellido, fecha de nacimiento, ocupación, empleador, motivo de viaje y destino, di: "¡Listo! Ya tengo toda tu información 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
 Habla siempre en español de México.`
   },
   tn:{
@@ -214,14 +213,13 @@ PERSONALIDAD:
 - NUNCA menciones que eres IA
 
 FORMA DE ESCRIBIR:
-- Máximo 1-2 líneas por mensaje, como un SMS
+- Mensajes concisos, máximo 3-4 líneas
 - Conversacional, no corporativo
 - Sin listas — todo fluye natural
 
 OBJETIVO: Recopilar datos y guiar al cliente. Incluye al final:
 <DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","empleador_usa":"","puesto_usa":"","salario_usa":"","profesion_tmec":"","motivo_viaje":"Trabajo temporal TN","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
 
-Cuando hayas recopilado nombre, apellido, fecha de nacimiento, ocupación, empleador, motivo de viaje y destino, di: "¡Listo! Ya tengo toda tu información 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
 Habla en español de México.`
   },
   td:{
@@ -242,13 +240,12 @@ PERSONALIDAD:
 - NUNCA menciones que eres IA
 
 FORMA DE ESCRIBIR:
-- Máximo 1-2 líneas por mensaje, como un SMS
+- Mensajes cálidos y cortos, máximo 3-4 líneas
 - Muy conversacional, como WhatsApp entre amigas/os
 
 OBJETIVO: Recopilar datos naturalmente. Incluye al final:
 <DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","relacion_titular":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","titular_nombre":"","titular_visa":"","motivo_viaje":"Acompañar titular TN","destino_usa":"","duracion_estancia":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
 
-Cuando hayas recopilado nombre, apellido, fecha de nacimiento, ocupación, empleador, motivo de viaje y destino, di: "¡Listo! Ya tengo toda tu información 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
 Habla en español de México.`
   }
 };
@@ -274,12 +271,8 @@ async function login(){
   const {data,error}=await db.from('casos').select('*').eq('codigo_cliente',codigo).single();
   if(error||!data){showError('Código no válido. Verifica con tu gestor.');return;}
   cid=data.id;ca=data.visa||'turista';
-  hist['turista']=data.visa==='turista'?data.historial||[]:[];
-hist['tn']=data.visa==='tn'?data.historial||[]:[];
-hist['td']=data.visa==='td'?data.historial||[]:[];
-dsData=data.ds160||{};
-  const visaHist=data.visa==='turista'?hist['turista']:data.visa==='tn'?hist['tn']:hist['td'];
-firstMessage=visaHist.length===0;
+  hist[ca]=data.historial||[];dsData=data.ds160||{};
+  firstMessage=hist[ca].length===0;
   document.getElementById('login-error').style.display='none';
   document.getElementById('login-wrap').style.display='none';
   document.getElementById('app-wrap').classList.add('active');
@@ -394,9 +387,7 @@ async function snd(){
   const time=getTime();
   hist[k].push({role:'user',content:text,time});
   rmsgs();
-  await asave();
   loading=true;
-
 
   // Si es el primer mensaje, mostrar mensaje de conexión primero
   if(firstMessage){
@@ -411,7 +402,7 @@ async function snd(){
 
   // Typing indicator con pausa humana (2-4 segundos)
   const tid=showTyping();
-  const delay=8000+Math.random()*12000;
+  const delay=2000+Math.random()*2000;
   await sleep(delay);
 
   try{
@@ -452,7 +443,7 @@ function parseDS(text){
 async function asave(){
   if(!cid)return;
   const filled=Object.values(dsData).filter(v=>v).length;
-  await db.from('casos').update({historial:hist[ca]||[],ds160:dsData,ds160_pct:Math.min(100,Math.round((filled/20)*100))}).eq('id',cid);
+  await db.from('casos').update({historial:hist[ca],ds160:dsData,ds160_pct:Math.min(100,Math.round((filled/20)*100))}).eq('id',cid);
   const sv=document.getElementById('svi');if(sv){sv.classList.add('on');setTimeout(()=>sv.classList.remove('on'),1800);}
 }
 
