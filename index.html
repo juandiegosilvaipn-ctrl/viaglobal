@@ -332,13 +332,20 @@ function showTab(t){
 function swAgent(a){
   currentAgent=a;
   document.querySelectorAll('.atab').forEach((t,i)=>t.classList.toggle('active',['turista','tn','td'][i]===a));
-  rsb();rchdr();
-  if(caseVisa && a!==caseVisa){
-    document.getElementById('msgs').innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:var(--ht)"><p style="font-size:13px">Este asesor es especialista en visa ${a==='tn'?'TN':a==='td'?'TD':'Turista'}.<br>Tu trámite es de visa ${caseVisa==='tn'?'TN':caseVisa==='td'?'TD':'Turista'} con ${AGENTS[caseVisa].fullName}.</p></div>`;
-  } else {
+  rsb();rchdr();rqa();
+  if(a===caseVisa){
     rmsgs();
+    document.getElementById('inp').disabled=false;
+    document.querySelector('.sndbtn').disabled=false;
+  } else {
+    document.getElementById('msgs').innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:var(--ht)">
+      <div style="font-size:30px;margin-bottom:8px">🔒</div>
+      <p style="font-size:13px;font-weight:500;color:var(--tx);margin-bottom:4px">Asesor no disponible</p>
+      <p style="font-size:12px">Tu trámite es de visa <strong>${caseVisa==='tn'?'TN':caseVisa==='td'?'TD':'Turista'}</strong>.<br>Tu asesor es <strong>${AGENTS[caseVisa].fullName}</strong>.</p>
+    </div>`;
+    document.getElementById('inp').disabled=true;
+    document.querySelector('.sndbtn').disabled=true;
   }
-  rqa();
 }
 
 
