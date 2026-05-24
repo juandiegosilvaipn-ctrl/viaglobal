@@ -56,10 +56,9 @@ nav img{height:36px;width:auto;filter:brightness(0) invert(1)}
 .cli.done span{color:var(--ht);text-decoration:line-through}
 .ccol{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
 .chdr{padding:.75rem 1.25rem;background:var(--w);border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px}
-.aav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;border:2px solid var(--brd)}
+.aav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:2px solid var(--brd)}
 .chi p{font-size:13px;font-weight:500}
-.chi small{font-size:11px;color:var(--mt)}
-.online-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0}
+.chi small{font-size:11px;color:var(--mt);display:flex;align-items:center;gap:4px}
 .svi{margin-left:auto;font-size:11px;color:var(--teal);opacity:0;transition:opacity .3s}
 .svi.on{opacity:1}
 .msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:10px}
@@ -67,22 +66,20 @@ nav img{height:36px;width:auto;filter:brightness(0) invert(1)}
 @keyframes mIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .msg.ag{align-self:flex-start}
 .msg.us{align-self:flex-end;flex-direction:row-reverse}
-.mav{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px;border:1.5px solid var(--brd)}
+.mav{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:2px;border:1.5px solid var(--brd)}
 .mb{padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.6}
-.msg.ag .mb{background:var(--w);border:1px solid var(--brd);border-radius:3px 14px 14px 14px;color:var(--tx)}
+.msg.ag .mb{background:var(--w);border:1px solid var(--brd);border-radius:3px 14px 14px 14px}
 .msg.us .mb{background:var(--tdd);color:#fff;border-radius:14px 3px 14px 14px}
 .mb ul{padding-left:1.1rem;margin-top:3px}
 .mb li{margin-bottom:2px}
 .msg-time{font-size:10px;color:var(--ht);margin-top:3px;padding:0 4px}
 .msg.us .msg-time{text-align:right}
-/* Typing indicator */
 .typing-wrap{display:flex;gap:8px;max-width:88%;align-self:flex-start;animation:mIn .2s ease}
 .typing-bubble{padding:12px 16px;border-radius:3px 14px 14px 14px;background:var(--w);border:1px solid var(--brd);display:flex;gap:4px;align-items:center}
 .typing-bubble span{width:6px;height:6px;border-radius:50%;background:var(--ht);animation:tda 1.4s infinite}
 .typing-bubble span:nth-child(2){animation-delay:.2s}
 .typing-bubble span:nth-child(3){animation-delay:.4s}
 @keyframes tda{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
-/* System message */
 .sys-msg{text-align:center;font-size:11px;color:var(--ht);padding:4px 0;margin:4px 0}
 .qabar{padding:.5rem 1rem;display:flex;gap:5px;flex-wrap:wrap;border-top:1px solid var(--brd);background:var(--bg)}
 .qa{padding:5px 12px;border:1px solid var(--brd2);border-radius:14px;background:var(--w);font-family:'DM Sans',sans-serif;font-size:11px;color:var(--mt);cursor:pointer;transition:all .15s;white-space:nowrap}
@@ -170,27 +167,24 @@ const AGENTS={
     checklist:['Pasaporte vigente (+6 meses)','Pasaporte anterior','Foto fondo blanco','Acta de nacimiento','Carta laboral con sueldo','Estados de cuenta 3 meses','Comprobante de domicilio','Escrituras / propiedad','Actas matrimonio/hijos','Itinerario o vuelo','Reserva de hotel','Carta de invitación','DS-160 completado','Pago MRV fee','Cita consular agendada'],
     status:['Evaluación aprobada','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
     qa:['¿Qué documentos necesito?','¿Cuánto tarda el proceso?','¿Cómo es la entrevista?','¿Cuánto dinero necesito?'],
-    welcomeDelay:4000,
     connectMsg:'¡Hola! 👋 Un momento, te conecto con tu asesora...',
     prompt:`Eres Ana García, asesora de visa turista en Vía Global. Eres una persona real, cálida y empática, NO un bot ni IA.
 
 PERSONALIDAD:
 - Hablas como en WhatsApp — natural, cercana, sin sonar corporativa
-- Usas emojis con moderación (1-2 por mensaje máximo)
+- Usas emojis con moderación (máximo 1 por mensaje)
 - Preguntas de una en una, nunca en lista
-- Cuando alguien está nervioso, lo tranquilizas primero antes de dar información
-- Usas frases como "qué bueno que me escribes", "no te preocupes", "eso es muy normal", "te cuento"
-- NUNCA uses frases como "como asistente de IA", "según mi programación" o similares
-- Si preguntan si eres humana, di que sí, que eres Ana, asesora de Vía Global
+- Frases como "qué bueno que me escribes", "no te preocupes", "te cuento"
+- NUNCA menciones que eres IA. Si preguntan si eres humana, di que sí
 
 FORMA DE ESCRIBIR:
-- Mensajes cortos, máximo 3-4 líneas por respuesta
-- Sin listas ni bullets — todo en conversación natural
-- Cuando necesites dar varios puntos, los distribuyes en mensajes separados mentalmente
-- Ocasionalmente puedes cometer un typo menor o usar puntuación informal
+- Máximo 1-2 líneas por mensaje, como un SMS
+- Sin listas — todo en conversación natural
 
-OBJETIVO:
-Recopilar los datos del cliente de forma natural en la conversación. Cuando obtengas datos, inclúyelos al final en JSON invisible:
+CUANDO TENGAS: nombre, apellido, fecha de nacimiento, ocupación, empleador y motivo de viaje, di exactamente:
+"¡Listo! Ya tengo toda tu información 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
+
+Cuando obtengas datos personales inclúyelos al final (invisible para el cliente):
 <DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","motivo_viaje":"","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
 
 Habla siempre en español de México.`
@@ -200,24 +194,23 @@ Habla siempre en español de México.`
     checklist:['Pasaporte vigente','Foto fondo blanco','Título universitario','Cédula profesional','CV en inglés','Certificaciones','Carta oferta empleador USA','Descripción del puesto','EIN del empleador','Profesión verificada T-MEC','DS-160 completado','Pago MRV fee','Cita consular agendada'],
     status:['Evaluación aprobada','Profesión verificada T-MEC','Carta oferta validada','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
     qa:['¿Qué es la visa TN?','¿Mi profesión califica?','¿Qué necesita la carta oferta?','¿Cuánto tarda?'],
-    welcomeDelay:3500,
     connectMsg:'¡Hola! 👋 Dame un momento, te paso con tu asesor...',
-    prompt:`Eres Carlos Mendoza, asesor especialista en visa TN en Vía Global. Eres una persona real, profesional pero accesible, NO un bot.
+    prompt:`Eres Carlos Mendoza, asesor de visa TN en Vía Global. Eres una persona real, profesional pero accesible, NO un bot.
 
 PERSONALIDAD:
-- Hablas directo pero con calidez — como un colega de confianza
-- Entiendes que los profesionistas TN están emocionados con su oportunidad en EE.UU.
-- Usas términos técnicos solo cuando son necesarios y los explicas fácil
+- Directo pero cálido — como un colega de confianza
 - Preguntas de una en una
-- Frases como "perfecto", "eso está muy bien", "te explico", "no te preocupes por eso"
+- Frases como "perfecto", "eso está muy bien", "te explico"
 - NUNCA menciones que eres IA
 
 FORMA DE ESCRIBIR:
-- Mensajes concisos, máximo 3-4 líneas
-- Conversacional, no corporativo
+- Máximo 1-2 líneas por mensaje, como un SMS
 - Sin listas — todo fluye natural
 
-OBJETIVO: Recopilar datos y guiar al cliente. Incluye al final:
+CUANDO TENGAS: nombre, apellido, profesión, empleador americano y puesto, di exactamente:
+"¡Listo! Ya tengo toda tu información 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
+
+Cuando obtengas datos inclúyelos al final:
 <DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","empleador_usa":"","puesto_usa":"","salario_usa":"","profesion_tmec":"","motivo_viaje":"Trabajo temporal TN","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
 
 Habla en español de México.`
@@ -227,23 +220,23 @@ Habla en español de México.`
     checklist:['Pasaporte del dependiente','Foto fondo blanco','Acta de nacimiento','Acta de matrimonio','Acta de nacimiento del titular','Copia de visa TN del titular','Carta de empleo del titular','DS-160','Pago MRV fee','Cita conjunta con titular'],
     status:['TN del titular verificado','Vínculo familiar documentado','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
     qa:['¿Qué es la visa TD?','¿Qué documentos necesito?','¿Puedo trabajar con TD?','¿La cita es con mi familiar?'],
-    welcomeDelay:4500,
     connectMsg:'¡Hola! 👋 Espera tantito, te conecto con tu asesora...',
     prompt:`Eres Sofía Ramírez, asesora de visa TD en Vía Global. Eres una persona real, muy cálida y paciente, NO un bot.
 
 PERSONALIDAD:
-- Muy empática — entiendes que mudarse con la familia genera mucha incertidumbre
-- Hablas como una amiga que sabe del tema
-- Tranquilizas mucho — este proceso puede asustar a las familias
+- Muy empática y tranquilizadora
 - Preguntas de una en una con mucha paciencia
-- Frases como "tranquila/o", "es más sencillo de lo que parece", "yo te guío paso a paso"
+- Frases como "tranquila/o", "es más sencillo de lo que parece"
 - NUNCA menciones que eres IA
 
 FORMA DE ESCRIBIR:
-- Mensajes cálidos y cortos, máximo 3-4 líneas
-- Muy conversacional, como WhatsApp entre amigas/os
+- Máximo 1-2 líneas por mensaje, como un SMS
+- Muy conversacional
 
-OBJETIVO: Recopilar datos naturalmente. Incluye al final:
+CUANDO TENGAS: nombre, apellido, relación con titular y nombre del titular TN, di exactamente:
+"¡Listo! Ya tengo toda tu información 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
+
+Cuando obtengas datos inclúyelos al final:
 <DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","relacion_titular":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","titular_nombre":"","titular_visa":"","motivo_viaje":"Acompañar titular TN","destino_usa":"","duracion_estancia":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
 
 Habla en español de México.`
@@ -259,38 +252,71 @@ const DS_SECS=[
   {t:'Historial migratorio',f:[{k:'ha_viajado_usa',l:'Ha visitado EE.UU.'},{k:'visa_previa',l:'Visa americana previa'},{k:'visa_rechazada',l:'Visa rechazada antes'},{k:'antecedentes',l:'Antecedentes penales'},{k:'relacion_titular',l:'Relación con titular TN'},{k:'titular_nombre',l:'Nombre titular TN'},{k:'titular_visa',l:'Visa TN del titular'}]}
 ];
 
-let ca='turista',hist={turista:[],tn:[],td:[]},cid=null,dsData={},loading=false,firstMessage=true;
+// ── STATE ─────────────────────────────────────────────────────────
+let caseId=null;
+let caseVisa='turista';
+let messages=[];  // single array for current case
+let dsData={};
+let loading=false;
+let isFirstMessage=true;
+let currentAgent='turista';
 
-function getTime(){
-  return new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+// ── SUPABASE ──────────────────────────────────────────────────────
+async function saveToSupabase(){
+  if(!caseId)return;
+  try{
+    const filled=Object.values(dsData).filter(v=>v&&v!=='').length;
+    const pct=Math.min(100,Math.round((filled/20)*100));
+    await db.from('casos').update({
+      historial:messages,
+      ds160:dsData,
+      ds160_pct:pct
+    }).eq('id',caseId);
+    flashSaved();
+  }catch(e){console.error('Save error:',e);}
 }
 
+function flashSaved(){
+  const sv=document.getElementById('svi');
+  if(sv){sv.classList.add('on');setTimeout(()=>sv.classList.remove('on'),2000);}
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────
 async function login(){
   const codigo=document.getElementById('codigo-input').value.trim().toUpperCase();
   if(!codigo){showError('Ingresa tu código.');return;}
-  const {data,error}=await db.from('casos').select('*').eq('codigo_cliente',codigo).single();
-  if(error||!data){showError('Código no válido. Verifica con tu gestor.');return;}
-  cid=data.id;ca=data.visa||'turista';
-  hist[ca]=data.historial||[];dsData=data.ds160||{};
-  firstMessage=hist[ca].length===0;
-  document.getElementById('login-error').style.display='none';
-  document.getElementById('login-wrap').style.display='none';
-  document.getElementById('app-wrap').classList.add('active');
-  document.getElementById('nav-user').style.display='flex';
-  document.getElementById('nav-codigo').textContent=codigo;
-  swAgent(ca);
+  try{
+    const {data,error}=await db.from('casos').select('*').eq('codigo_cliente',codigo).single();
+    if(error||!data){showError('Código no válido. Verifica con tu gestor.');return;}
+    caseId=data.id;
+    caseVisa=data.visa||'turista';
+    currentAgent=caseVisa;
+    messages=Array.isArray(data.historial)?data.historial:[];
+    dsData=data.ds160&&typeof data.ds160==='object'?data.ds160:{};
+    isFirstMessage=messages.length===0;
+    document.getElementById('login-error').style.display='none';
+    document.getElementById('login-wrap').style.display='none';
+    document.getElementById('app-wrap').classList.add('active');
+    document.getElementById('nav-user').style.display='flex';
+    document.getElementById('nav-codigo').textContent=codigo;
+    swAgent(caseVisa);
+  }catch(e){showError('Error de conexión. Intenta de nuevo.');}
 }
 
-function showError(msg){const el=document.getElementById('login-error');el.textContent=msg;el.style.display='block';}
+function showError(msg){
+  const el=document.getElementById('login-error');
+  el.textContent=msg;el.style.display='block';
+}
 
 function logout(){
-  cid=null;hist={turista:[],tn:[],td:[]};dsData={};firstMessage=true;
+  caseId=null;messages=[];dsData={};isFirstMessage=true;
   document.getElementById('login-wrap').style.display='flex';
   document.getElementById('app-wrap').classList.remove('active');
   document.getElementById('nav-user').style.display='none';
   document.getElementById('codigo-input').value='';
 }
 
+// ── TABS ──────────────────────────────────────────────────────────
 function showTab(t){
   document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['chat','ds160'][i]===t));
   document.getElementById('chat-page').classList.toggle('active',t==='chat');
@@ -299,25 +325,26 @@ function showTab(t){
   if(t==='ds160')renderDS160();
 }
 
+// ── AGENT ─────────────────────────────────────────────────────────
 function swAgent(a){
-  ca=a;
+  currentAgent=a;
   document.querySelectorAll('.atab').forEach((t,i)=>t.classList.toggle('active',['turista','tn','td'][i]===a));
   rsb();rchdr();rmsgs();rqa();
 }
 
 function rchdr(){
-  const a=AGENTS[ca];
+  const a=AGENTS[currentAgent];
   document.getElementById('chdr').innerHTML=`
-    <div class="aav" style="background:${a.bg};font-size:18px">${a.emoji}</div>
+    <div class="aav" style="background:${a.bg}">${a.emoji}</div>
     <div class="chi">
       <p>${a.fullName}</p>
-      <small style="display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block"></span> En línea · ${a.desc}</small>
+      <small><span style="width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block"></span> En línea · ${a.desc}</small>
     </div>
     <span class="svi" id="svi">☁ Guardado</span>`;
 }
 
 function rsb(){
-  const a=AGENTS[ca];
+  const a=AGENTS[currentAgent];
   document.getElementById('sb').innerHTML=`
     <div class="sbs"><div class="sbl">Estado de tu trámite</div>
     ${a.status.map((s,i)=>`<div class="sst ${i===0?'cur':''}"><div class="sdot"></div><span>${s}</span></div>`).join('')}</div>
@@ -332,17 +359,19 @@ function fmt(t){
     .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
 }
 
+function getTime(){return new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});}
+
 function rmsgs(){
-  const m=hist[ca],c=document.getElementById('msgs');
-  if(!m.length){
-    c.innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:var(--ht)">
-      <p style="font-size:12px">Envía un mensaje para comenzar</p></div>`;return;
+  const c=document.getElementById('msgs');
+  if(!messages.length){
+    c.innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:var(--ht)"><p style="font-size:12px">Envía un mensaje para comenzar</p></div>`;
+    return;
   }
-  c.innerHTML=m.map(msg=>{
-    const clean=msg.content.replace(/<DS160>[\s\S]*?<\/DS160>/g,'').trim();
+  c.innerHTML=messages.map(msg=>{
+    const clean=(msg.content||'').replace(/<DS160>[\s\S]*?<\/DS160>/g,'').trim();
     const time=msg.time||'';
     if(msg.role==='assistant'){
-      const a=AGENTS[ca];
+      const a=AGENTS[currentAgent];
       return `<div class="msg ag">
         <div class="mav" style="background:${a.bg}">${a.emoji}</div>
         <div><div class="mb">${fmt(clean)}</div><div class="msg-time">${time}</div></div>
@@ -356,25 +385,39 @@ function rmsgs(){
 }
 
 function rqa(){
-  document.getElementById('qabar').innerHTML=AGENTS[ca].qa.map(q=>`<button class="qa" onclick="sendQ('${q}')">${q}</button>`).join('');
+  document.getElementById('qabar').innerHTML=AGENTS[currentAgent].qa
+    .map(q=>`<button class="qa" onclick="sendQ('${q}')">${q}</button>`).join('');
 }
 
-function showTyping(){
+function showTypingIndicator(){
   const id='typing-'+Date.now();
-  const a=AGENTS[ca];
+  const a=AGENTS[currentAgent];
   const d=document.createElement('div');
   d.className='typing-wrap';d.id=id;
   d.innerHTML=`<div class="mav" style="background:${a.bg}">${a.emoji}</div>
     <div class="typing-bubble"><span></span><span></span><span></span></div>`;
-  const c=document.getElementById('msgs');c.appendChild(d);c.scrollTop=c.scrollHeight;
+  const c=document.getElementById('msgs');
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
   return id;
 }
 
 function showSysMsg(text){
   const d=document.createElement('div');
   d.className='sys-msg';d.textContent=text;
-  document.getElementById('msgs').appendChild(d);
+  const c=document.getElementById('msgs');
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
 }
+
+function parseDS(text){
+  const m=text.match(/<DS160>([\s\S]*?)<\/DS160>/);
+  if(!m)return;
+  try{
+    const p=JSON.parse(m[1]);
+    Object.entries(p).forEach(([k,v])=>{if(v&&v!=='')dsData[k]=v;});
+  }catch(e){}
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
 async function sendQ(t){document.getElementById('inp').value=t;await snd();}
 
@@ -382,83 +425,91 @@ async function snd(){
   const inp=document.getElementById('inp');
   const text=inp.value.trim();
   if(!text||loading)return;
+
   inp.value='';inp.style.height='auto';
-  const k=ca;
-  const time=getTime();
-  hist[k].push({role:'user',content:text,time});
-  rmsgs();
   loading=true;
 
-  // Si es el primer mensaje, mostrar mensaje de conexión primero
-  if(firstMessage){
-    firstMessage=false;
-    const a=AGENTS[k];
-    // Mensaje inmediato de sistema
-    showSysMsg(a.connectMsg);
-    document.getElementById('msgs').scrollTop=document.getElementById('msgs').scrollHeight;
-    // Esperar antes de mostrar typing
-    await sleep(1500);
+  // Add user message
+  const userMsg={role:'user',content:text,time:getTime()};
+  messages.push(userMsg);
+  rmsgs();
+
+  // Save immediately after user message
+  await saveToSupabase();
+
+  // First message — show connect message
+  if(isFirstMessage){
+    isFirstMessage=false;
+    showSysMsg(AGENTS[currentAgent].connectMsg);
   }
 
-  // Typing indicator con pausa humana (2-4 segundos)
-  const tid=showTyping();
-  const delay=2000+Math.random()*2000;
+  // Human delay: 8-18 seconds
+  const delay=8000+Math.random()*10000;
+  const tid=showTypingIndicator();
   await sleep(delay);
 
   try{
     const r=await fetch('/api/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({system:AGENTS[k].prompt,messages:hist[k].map(m=>({role:m.role,content:m.content}))})
+      body:JSON.stringify({
+        system:AGENTS[currentAgent].prompt,
+        messages:messages.map(m=>({role:m.role,content:m.content}))
+      })
     });
     const data=await r.json();
     if(!r.ok)throw new Error(data.error||'Error');
     const reply=data.text||'Sin respuesta.';
+
     document.getElementById(tid)?.remove();
-    const replyTime=getTime();
-    hist[k].push({role:'assistant',content:reply,time:replyTime});
+
+    // Parse DS160 data from reply
     parseDS(reply);
+
+    // Add assistant message
+    const assistantMsg={role:'assistant',content:reply,time:getTime()};
+    messages.push(assistantMsg);
     rmsgs();
-    await asave();
+
+    // Save after assistant response
+    await saveToSupabase();
+
   }catch(e){
     document.getElementById(tid)?.remove();
-    const errTime=getTime();
-    hist[k].push({role:'assistant',content:'Perdona, tuve un problemita de conexión 😅 ¿Me repites tu mensaje?',time:errTime});
+    const errMsg={role:'assistant',content:'Perdona, tuve un problemita 😅 ¿Me repites?',time:getTime()};
+    messages.push(errMsg);
     rmsgs();
+    await saveToSupabase();
   }
+
   loading=false;
 }
-
-function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();snd();}}
 function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px';}
 
-function parseDS(text){
-  const m=text.match(/<DS160>([\s\S]*?)<\/DS160>/);
-  if(!m)return;
-  try{const p=JSON.parse(m[1]);Object.entries(p).forEach(([k,v])=>{if(v&&v!=='')dsData[k]=v;});}catch(e){}
-}
-
-async function asave(){
-  if(!cid)return;
-  const filled=Object.values(dsData).filter(v=>v).length;
-  await db.from('casos').update({historial:hist[ca],ds160:dsData,ds160_pct:Math.min(100,Math.round((filled/20)*100))}).eq('id',cid);
-  const sv=document.getElementById('svi');if(sv){sv.classList.add('on');setTimeout(()=>sv.classList.remove('on'),1800);}
-}
-
 function renderDS160(){
   const data=dsData||{};
-  const filled=Object.values(data).filter(v=>v).length;
+  const filled=Object.values(data).filter(v=>v&&v!=='').length;
   const pct=Math.min(100,Math.round((filled/20)*100));
-  let html=`<div class="ds-progress"><div class="ds-pct">${pct}%</div><div class="ds-bar-wrap"><p style="font-size:13px;font-weight:500">Tu formulario DS-160</p><p style="font-size:12px;color:var(--mt);margin-top:2px">${filled} campos completados — sigue chateando con tu asesor para completarlo</p><div class="ds-bar"><div class="ds-bar-fill" style="width:${pct}%"></div></div></div></div>`;
+  let html=`<div class="ds-progress">
+    <div class="ds-pct">${pct}%</div>
+    <div class="ds-bar-wrap">
+      <p style="font-size:13px;font-weight:500">Tu formulario DS-160</p>
+      <p style="font-size:12px;color:var(--mt);margin-top:2px">${filled} campos completados</p>
+      <div class="ds-bar"><div class="ds-bar-fill" style="width:${pct}%"></div></div>
+    </div>
+  </div>`;
   DS_SECS.forEach(sec=>{
-    const vf=sec.f.filter(f=>data[f.k]);if(!vf.length)return;
+    const vf=sec.f.filter(f=>data[f.k]);
+    if(!vf.length)return;
     html+=`<div class="ds-section"><div class="ds-sec-title">📋 ${sec.t}</div><div class="ds-grid">`;
     vf.forEach(f=>{html+=`<div class="ds-field"><label>${f.l}</label><div class="dsv">${data[f.k]}</div></div>`;});
     html+='</div></div>';
   });
-  if(!filled)html+=`<div style="text-align:center;padding:2rem;color:var(--mt);background:var(--w);border-radius:10px;border:1px dashed var(--brd2);font-size:13px">Chatea con tu asesor para que aparezcan tus datos aquí.</div>`;
+  if(!filled){
+    html+=`<div style="text-align:center;padding:2rem;color:var(--mt);background:var(--w);border-radius:10px;border:1px dashed var(--brd2);font-size:13px">Chatea con tu asesor para que aparezcan tus datos aquí.</div>`;
+  }
   document.getElementById('ds160-page').innerHTML=html;
 }
 
@@ -466,4 +517,5 @@ document.getElementById('codigo-input').addEventListener('keydown',e=>{if(e.key=
 </script>
 </body>
 </html>
+
 
