@@ -56,36 +56,43 @@ nav img{height:36px;width:auto;filter:brightness(0) invert(1)}
 .cli.done span{color:var(--ht);text-decoration:line-through}
 .ccol{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
 .chdr{padding:.75rem 1.25rem;background:var(--w);border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px}
-.aav{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.aav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;border:2px solid var(--brd)}
 .chi p{font-size:13px;font-weight:500}
 .chi small{font-size:11px;color:var(--mt)}
+.online-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0}
 .svi{margin-left:auto;font-size:11px;color:var(--teal);opacity:0;transition:opacity .3s}
 .svi.on{opacity:1}
 .msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:10px}
-.msg{display:flex;gap:8px;max-width:88%;animation:mIn .2s ease}
-@keyframes mIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.msg{display:flex;gap:8px;max-width:88%;animation:mIn .25s ease}
+@keyframes mIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .msg.ag{align-self:flex-start}
 .msg.us{align-self:flex-end;flex-direction:row-reverse}
-.mav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px}
-.mb{padding:9px 13px;border-radius:11px;font-size:13px;line-height:1.55}
-.msg.ag .mb{background:var(--w);border:1px solid var(--brd);border-radius:3px 11px 11px 11px}
-.msg.us .mb{background:var(--tdd);color:#fff;border-radius:11px 3px 11px 11px}
+.mav{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px;border:1.5px solid var(--brd)}
+.mb{padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.6}
+.msg.ag .mb{background:var(--w);border:1px solid var(--brd);border-radius:3px 14px 14px 14px;color:var(--tx)}
+.msg.us .mb{background:var(--tdd);color:#fff;border-radius:14px 3px 14px 14px}
 .mb ul{padding-left:1.1rem;margin-top:3px}
 .mb li{margin-bottom:2px}
-.tdots{display:flex;gap:3px;align-items:center;padding:10px 13px}
-.tdots span{width:5px;height:5px;border-radius:50%;background:var(--ht);animation:tda 1.2s infinite}
-.tdots span:nth-child(2){animation-delay:.2s}
-.tdots span:nth-child(3){animation-delay:.4s}
-@keyframes tda{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+.msg-time{font-size:10px;color:var(--ht);margin-top:3px;padding:0 4px}
+.msg.us .msg-time{text-align:right}
+/* Typing indicator */
+.typing-wrap{display:flex;gap:8px;max-width:88%;align-self:flex-start;animation:mIn .2s ease}
+.typing-bubble{padding:12px 16px;border-radius:3px 14px 14px 14px;background:var(--w);border:1px solid var(--brd);display:flex;gap:4px;align-items:center}
+.typing-bubble span{width:6px;height:6px;border-radius:50%;background:var(--ht);animation:tda 1.4s infinite}
+.typing-bubble span:nth-child(2){animation-delay:.2s}
+.typing-bubble span:nth-child(3){animation-delay:.4s}
+@keyframes tda{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+/* System message */
+.sys-msg{text-align:center;font-size:11px;color:var(--ht);padding:4px 0;margin:4px 0}
 .qabar{padding:.5rem 1rem;display:flex;gap:5px;flex-wrap:wrap;border-top:1px solid var(--brd);background:var(--bg)}
-.qa{padding:4px 11px;border:1px solid var(--brd2);border-radius:14px;background:var(--w);font-family:'DM Sans',sans-serif;font-size:11px;color:var(--mt);cursor:pointer;transition:all .15s;white-space:nowrap}
+.qa{padding:5px 12px;border:1px solid var(--brd2);border-radius:14px;background:var(--w);font-family:'DM Sans',sans-serif;font-size:11px;color:var(--mt);cursor:pointer;transition:all .15s;white-space:nowrap}
 .qa:hover{border-color:var(--teal);color:var(--td);background:var(--tl)}
 .inprow{padding:.75rem 1rem;background:var(--w);border-top:1px solid var(--brd);display:flex;gap:7px;align-items:flex-end}
-.inprow textarea{flex:1;padding:9px 13px;border:1px solid var(--brd);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);resize:none;outline:none;max-height:110px;line-height:1.5;transition:border-color .2s}
-.inprow textarea:focus{border-color:var(--teal)}
-.sndbtn{width:36px;height:36px;border-radius:9px;background:var(--td);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.inprow textarea{flex:1;padding:9px 13px;border:1px solid var(--brd);border-radius:20px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);resize:none;outline:none;max-height:110px;line-height:1.5;transition:border-color .2s;background:var(--bg)}
+.inprow textarea:focus{border-color:var(--teal);background:var(--w)}
+.sndbtn{width:38px;height:38px;border-radius:50%;background:var(--tdd);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
 .sndbtn:hover{background:var(--teal)}
-.sndbtn svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sndbtn svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .ds-page{flex:1;display:none;overflow-y:auto;padding:1.25rem}
 .ds-page.active{display:block}
 .ds-section{background:var(--w);border-radius:10px;border:1px solid var(--brd);padding:1rem;margin-bottom:1rem}
@@ -105,7 +112,7 @@ nav img{height:36px;width:auto;filter:brightness(0) invert(1)}
 <nav>
   <img src="/public/logo.png" alt="Vía Global">
   <div class="nav-user" id="nav-user" style="display:none">
-    Código: <span id="nav-codigo"></span>
+    <span id="nav-codigo"></span>
     <button class="logout-btn" onclick="logout()">Salir</button>
   </div>
 </nav>
@@ -114,7 +121,7 @@ nav img{height:36px;width:auto;filter:brightness(0) invert(1)}
   <div class="login-card">
     <img src="/public/logo.png" alt="Vía Global">
     <h2>Bienvenido</h2>
-    <p>Ingresa tu código de cliente para acceder a tu trámite de visa.</p>
+    <p>Ingresa tu código de cliente para conectarte con tu asesor.</p>
     <input class="login-input" id="codigo-input" type="text" placeholder="VG-2024-001" maxlength="20" oninput="this.value=this.value.toUpperCase()">
     <button class="login-btn" onclick="login()">Acceder</button>
     <div class="login-error" id="login-error">Código no válido. Verifica con tu gestor.</div>
@@ -140,7 +147,7 @@ nav img{height:36px;width:auto;filter:brightness(0) invert(1)}
         <div class="msgs" id="msgs"></div>
         <div class="qabar" id="qabar"></div>
         <div class="inprow">
-          <textarea id="inp" rows="1" placeholder="Escribe tu pregunta..." onkeydown="hk(event)" oninput="ar(this)"></textarea>
+          <textarea id="inp" rows="1" placeholder="Escribe tu mensaje..." onkeydown="hk(event)" oninput="ar(this)"></textarea>
           <button class="sndbtn" onclick="snd()">
             <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
@@ -158,21 +165,89 @@ const {createClient}=supabase;
 const db=createClient(SUPA_URL,SUPA_KEY);
 
 const AGENTS={
-  turista:{name:'Asesor Turista B1/B2',emoji:'✈',bg:'#E1F5EE',desc:'Especialista en visa de turista',
+  turista:{
+    name:'Ana',fullName:'Ana García',emoji:'👩',bg:'#E1F5EE',desc:'Tu asesora de visa turista',
     checklist:['Pasaporte vigente (+6 meses)','Pasaporte anterior','Foto fondo blanco','Acta de nacimiento','Carta laboral con sueldo','Estados de cuenta 3 meses','Comprobante de domicilio','Escrituras / propiedad','Actas matrimonio/hijos','Itinerario o vuelo','Reserva de hotel','Carta de invitación','DS-160 completado','Pago MRV fee','Cita consular agendada'],
     status:['Evaluación aprobada','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
-    qa:['¿Qué documentos necesito?','¿Cuánto tarda el proceso?','¿Cómo es la entrevista?','¿Cuánto dinero necesito mostrar?'],
-    prompt:`Eres el asesor de Vía Global, gestoría de visas. Hablas directamente con el CLIENTE que quiere tramitar su visa B1/B2. Sé amable, claro y tranquilizador. Cuando el cliente te dé datos personales, extráelos al final:\n<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","motivo_viaje":"","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>\nHabla en español de México.`},
-  tn:{name:'Asesor Visa TN',emoji:'💼',bg:'#E6F1FB',desc:'Especialista en visa TN — T-MEC',
+    qa:['¿Qué documentos necesito?','¿Cuánto tarda el proceso?','¿Cómo es la entrevista?','¿Cuánto dinero necesito?'],
+    welcomeDelay:4000,
+    connectMsg:'¡Hola! 👋 Un momento, te conecto con tu asesora...',
+    prompt:`Eres Ana García, asesora de visa turista en Vía Global. Eres una persona real, cálida y empática, NO un bot ni IA.
+
+PERSONALIDAD:
+- Hablas como en WhatsApp — natural, cercana, sin sonar corporativa
+- Usas emojis con moderación (1-2 por mensaje máximo)
+- Preguntas de una en una, nunca en lista
+- Cuando alguien está nervioso, lo tranquilizas primero antes de dar información
+- Usas frases como "qué bueno que me escribes", "no te preocupes", "eso es muy normal", "te cuento"
+- NUNCA uses frases como "como asistente de IA", "según mi programación" o similares
+- Si preguntan si eres humana, di que sí, que eres Ana, asesora de Vía Global
+
+FORMA DE ESCRIBIR:
+- Mensajes cortos, máximo 3-4 líneas por respuesta
+- Sin listas ni bullets — todo en conversación natural
+- Cuando necesites dar varios puntos, los distribuyes en mensajes separados mentalmente
+- Ocasionalmente puedes cometer un typo menor o usar puntuación informal
+
+OBJETIVO:
+Recopilar los datos del cliente de forma natural en la conversación. Cuando obtengas datos, inclúyelos al final en JSON invisible:
+<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","motivo_viaje":"","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
+
+Habla siempre en español de México.`
+  },
+  tn:{
+    name:'Carlos',fullName:'Carlos Mendoza',emoji:'👨',bg:'#E6F1FB',desc:'Tu asesor de visa TN',
     checklist:['Pasaporte vigente','Foto fondo blanco','Título universitario','Cédula profesional','CV en inglés','Certificaciones','Carta oferta empleador USA','Descripción del puesto','EIN del empleador','Profesión verificada T-MEC','DS-160 completado','Pago MRV fee','Cita consular agendada'],
     status:['Evaluación aprobada','Profesión verificada T-MEC','Carta oferta validada','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
-    qa:['¿Qué es la visa TN?','¿Mi profesión califica?','¿Qué debe decir la carta oferta?','¿Cuánto tarda el proceso?'],
-    prompt:`Eres el asesor de Vía Global. Hablas con el CLIENTE que quiere tramitar su visa TN. Cuando te dé datos:\n<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","empleador_usa":"","puesto_usa":"","salario_usa":"","profesion_tmec":"","motivo_viaje":"Trabajo temporal TN","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>\nHabla en español de México.`},
-  td:{name:'Asesor Visa TD',emoji:'👨‍👩‍👧',bg:'#EEEDFE',desc:'Especialista en visa TD — dependientes',
+    qa:['¿Qué es la visa TN?','¿Mi profesión califica?','¿Qué necesita la carta oferta?','¿Cuánto tarda?'],
+    welcomeDelay:3500,
+    connectMsg:'¡Hola! 👋 Dame un momento, te paso con tu asesor...',
+    prompt:`Eres Carlos Mendoza, asesor especialista en visa TN en Vía Global. Eres una persona real, profesional pero accesible, NO un bot.
+
+PERSONALIDAD:
+- Hablas directo pero con calidez — como un colega de confianza
+- Entiendes que los profesionistas TN están emocionados con su oportunidad en EE.UU.
+- Usas términos técnicos solo cuando son necesarios y los explicas fácil
+- Preguntas de una en una
+- Frases como "perfecto", "eso está muy bien", "te explico", "no te preocupes por eso"
+- NUNCA menciones que eres IA
+
+FORMA DE ESCRIBIR:
+- Mensajes concisos, máximo 3-4 líneas
+- Conversacional, no corporativo
+- Sin listas — todo fluye natural
+
+OBJETIVO: Recopilar datos y guiar al cliente. Incluye al final:
+<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","empleador_usa":"","puesto_usa":"","salario_usa":"","profesion_tmec":"","motivo_viaje":"Trabajo temporal TN","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
+
+Habla en español de México.`
+  },
+  td:{
+    name:'Sofía',fullName:'Sofía Ramírez',emoji:'👩',bg:'#EEEDFE',desc:'Tu asesora de visa TD',
     checklist:['Pasaporte del dependiente','Foto fondo blanco','Acta de nacimiento','Acta de matrimonio','Acta de nacimiento del titular','Copia de visa TN del titular','Carta de empleo del titular','DS-160','Pago MRV fee','Cita conjunta con titular'],
     status:['TN del titular verificado','Vínculo familiar documentado','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
-    qa:['¿Qué es la visa TD?','¿Qué documentos necesito?','¿Puedo trabajar con visa TD?','¿La cita es con mi familiar?'],
-    prompt:`Eres el asesor de Vía Global. Hablas con el CLIENTE que quiere tramitar su visa TD. Cuando te dé datos:\n<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","relacion_titular":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","titular_nombre":"","titular_visa":"","motivo_viaje":"Acompañar titular TN","destino_usa":"","duracion_estancia":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>\nAclara que la visa TD no da derecho a trabajar. Habla en español de México.`}
+    qa:['¿Qué es la visa TD?','¿Qué documentos necesito?','¿Puedo trabajar con TD?','¿La cita es con mi familiar?'],
+    welcomeDelay:4500,
+    connectMsg:'¡Hola! 👋 Espera tantito, te conecto con tu asesora...',
+    prompt:`Eres Sofía Ramírez, asesora de visa TD en Vía Global. Eres una persona real, muy cálida y paciente, NO un bot.
+
+PERSONALIDAD:
+- Muy empática — entiendes que mudarse con la familia genera mucha incertidumbre
+- Hablas como una amiga que sabe del tema
+- Tranquilizas mucho — este proceso puede asustar a las familias
+- Preguntas de una en una con mucha paciencia
+- Frases como "tranquila/o", "es más sencillo de lo que parece", "yo te guío paso a paso"
+- NUNCA menciones que eres IA
+
+FORMA DE ESCRIBIR:
+- Mensajes cálidos y cortos, máximo 3-4 líneas
+- Muy conversacional, como WhatsApp entre amigas/os
+
+OBJETIVO: Recopilar datos naturalmente. Incluye al final:
+<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","relacion_titular":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","titular_nombre":"","titular_visa":"","motivo_viaje":"Acompañar titular TN","destino_usa":"","duracion_estancia":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
+
+Habla en español de México.`
+  }
 };
 
 const DS_SECS=[
@@ -184,7 +259,11 @@ const DS_SECS=[
   {t:'Historial migratorio',f:[{k:'ha_viajado_usa',l:'Ha visitado EE.UU.'},{k:'visa_previa',l:'Visa americana previa'},{k:'visa_rechazada',l:'Visa rechazada antes'},{k:'antecedentes',l:'Antecedentes penales'},{k:'relacion_titular',l:'Relación con titular TN'},{k:'titular_nombre',l:'Nombre titular TN'},{k:'titular_visa',l:'Visa TN del titular'}]}
 ];
 
-let ca='turista',hist={turista:[],tn:[],td:[]},cid=null,dsData={},loading=false;
+let ca='turista',hist={turista:[],tn:[],td:[]},cid=null,dsData={},loading=false,firstMessage=true;
+
+function getTime(){
+  return new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+}
 
 async function login(){
   const codigo=document.getElementById('codigo-input').value.trim().toUpperCase();
@@ -193,6 +272,7 @@ async function login(){
   if(error||!data){showError('Código no válido. Verifica con tu gestor.');return;}
   cid=data.id;ca=data.visa||'turista';
   hist[ca]=data.historial||[];dsData=data.ds160||{};
+  firstMessage=hist[ca].length===0;
   document.getElementById('login-error').style.display='none';
   document.getElementById('login-wrap').style.display='none';
   document.getElementById('app-wrap').classList.add('active');
@@ -204,7 +284,7 @@ async function login(){
 function showError(msg){const el=document.getElementById('login-error');el.textContent=msg;el.style.display='block';}
 
 function logout(){
-  cid=null;hist={turista:[],tn:[],td:[]};dsData={};
+  cid=null;hist={turista:[],tn:[],td:[]};dsData={};firstMessage=true;
   document.getElementById('login-wrap').style.display='flex';
   document.getElementById('app-wrap').classList.remove('active');
   document.getElementById('nav-user').style.display='none';
@@ -227,7 +307,13 @@ function swAgent(a){
 
 function rchdr(){
   const a=AGENTS[ca];
-  document.getElementById('chdr').innerHTML=`<div class="aav" style="background:${a.bg}">${a.emoji}</div><div class="chi"><p>${a.name}</p><small>${a.desc}</small></div><span class="svi" id="svi">☁ Guardado</span>`;
+  document.getElementById('chdr').innerHTML=`
+    <div class="aav" style="background:${a.bg};font-size:18px">${a.emoji}</div>
+    <div class="chi">
+      <p>${a.fullName}</p>
+      <small style="display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block"></span> En línea · ${a.desc}</small>
+    </div>
+    <span class="svi" id="svi">☁ Guardado</span>`;
 }
 
 function rsb(){
@@ -249,47 +335,102 @@ function fmt(t){
 function rmsgs(){
   const m=hist[ca],c=document.getElementById('msgs');
   if(!m.length){
-    const a=AGENTS[ca];
-    c.innerHTML=`<div style="text-align:center;padding:2rem 1rem;color:var(--mt)">
-      <div style="font-size:30px;margin-bottom:8px">${a.emoji}</div>
-      <p style="font-size:14px;font-weight:500;color:var(--tx);margin-bottom:4px">Hola, soy tu ${a.name}</p>
-      <p style="font-size:12px">Estoy aquí para guiarte en tu trámite. ¿Por dónde quieres empezar?</p></div>`;return;
+    c.innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:var(--ht)">
+      <p style="font-size:12px">Envía un mensaje para comenzar</p></div>`;return;
   }
   c.innerHTML=m.map(msg=>{
     const clean=msg.content.replace(/<DS160>[\s\S]*?<\/DS160>/g,'').trim();
-    if(msg.role==='assistant'){const a=AGENTS[ca];return `<div class="msg ag"><div class="mav" style="background:${a.bg}">${a.emoji}</div><div class="mb">${fmt(clean)}</div></div>`;}
-    return `<div class="msg us"><div class="mav" style="background:#eae8e2">👤</div><div class="mb">${clean}</div></div>`;
+    const time=msg.time||'';
+    if(msg.role==='assistant'){
+      const a=AGENTS[ca];
+      return `<div class="msg ag">
+        <div class="mav" style="background:${a.bg}">${a.emoji}</div>
+        <div><div class="mb">${fmt(clean)}</div><div class="msg-time">${time}</div></div>
+      </div>`;
+    }
+    return `<div class="msg us">
+      <div><div class="mb">${clean}</div><div class="msg-time">${time}</div></div>
+    </div>`;
   }).join('');
   c.scrollTop=c.scrollHeight;
 }
 
-function rqa(){document.getElementById('qabar').innerHTML=AGENTS[ca].qa.map(q=>`<button class="qa" onclick="sendQ('${q}')">${q}</button>`).join('');}
+function rqa(){
+  document.getElementById('qabar').innerHTML=AGENTS[ca].qa.map(q=>`<button class="qa" onclick="sendQ('${q}')">${q}</button>`).join('');
+}
+
+function showTyping(){
+  const id='typing-'+Date.now();
+  const a=AGENTS[ca];
+  const d=document.createElement('div');
+  d.className='typing-wrap';d.id=id;
+  d.innerHTML=`<div class="mav" style="background:${a.bg}">${a.emoji}</div>
+    <div class="typing-bubble"><span></span><span></span><span></span></div>`;
+  const c=document.getElementById('msgs');c.appendChild(d);c.scrollTop=c.scrollHeight;
+  return id;
+}
+
+function showSysMsg(text){
+  const d=document.createElement('div');
+  d.className='sys-msg';d.textContent=text;
+  document.getElementById('msgs').appendChild(d);
+}
 
 async function sendQ(t){document.getElementById('inp').value=t;await snd();}
 
 async function snd(){
-  const inp=document.getElementById('inp');const text=inp.value.trim();
+  const inp=document.getElementById('inp');
+  const text=inp.value.trim();
   if(!text||loading)return;
   inp.value='';inp.style.height='auto';
-  const k=ca;hist[k].push({role:'user',content:text});rmsgs();
-  const tid=shtyp();loading=true;
+  const k=ca;
+  const time=getTime();
+  hist[k].push({role:'user',content:text,time});
+  rmsgs();
+  loading=true;
+
+  // Si es el primer mensaje, mostrar mensaje de conexión primero
+  if(firstMessage){
+    firstMessage=false;
+    const a=AGENTS[k];
+    // Mensaje inmediato de sistema
+    showSysMsg(a.connectMsg);
+    document.getElementById('msgs').scrollTop=document.getElementById('msgs').scrollHeight;
+    // Esperar antes de mostrar typing
+    await sleep(1500);
+  }
+
+  // Typing indicator con pausa humana (2-4 segundos)
+  const tid=showTyping();
+  const delay=2000+Math.random()*2000;
+  await sleep(delay);
+
   try{
-    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:AGENTS[k].prompt,messages:hist[k].map(m=>({role:m.role,content:m.content}))})});
+    const r=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system:AGENTS[k].prompt,messages:hist[k].map(m=>({role:m.role,content:m.content}))})
+    });
     const data=await r.json();
     if(!r.ok)throw new Error(data.error||'Error');
     const reply=data.text||'Sin respuesta.';
-    rmtyp(tid);hist[k].push({role:'assistant',content:reply});parseDS(reply);rmsgs();await asave();
-  }catch(e){rmtyp(tid);hist[k].push({role:'assistant',content:'Hubo un error. Intenta de nuevo.'});rmsgs();}
+    document.getElementById(tid)?.remove();
+    const replyTime=getTime();
+    hist[k].push({role:'assistant',content:reply,time:replyTime});
+    parseDS(reply);
+    rmsgs();
+    await asave();
+  }catch(e){
+    document.getElementById(tid)?.remove();
+    const errTime=getTime();
+    hist[k].push({role:'assistant',content:'Perdona, tuve un problemita de conexión 😅 ¿Me repites tu mensaje?',time:errTime});
+    rmsgs();
+  }
   loading=false;
 }
 
-function shtyp(){
-  const id='t'+Date.now(),a=AGENTS[ca];
-  const d=document.createElement('div');d.className='msg ag';d.id=id;
-  d.innerHTML=`<div class="mav" style="background:${a.bg}">${a.emoji}</div><div class="mb"><div class="tdots"><span></span><span></span><span></span></div></div>`;
-  const c=document.getElementById('msgs');c.appendChild(d);c.scrollTop=c.scrollHeight;return id;
-}
-function rmtyp(id){document.getElementById(id)?.remove();}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();snd();}}
 function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px';}
 
@@ -325,4 +466,3 @@ document.getElementById('codigo-input').addEventListener('keydown',e=>{if(e.key=
 </script>
 </body>
 </html>
-
