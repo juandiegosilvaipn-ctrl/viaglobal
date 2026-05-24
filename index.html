@@ -450,7 +450,7 @@ function parseDS(text){
 async function asave(){
   if(!cid)return;
   const filled=Object.values(dsData).filter(v=>v).length;
-  await db.from('casos').update({historial:hist[ca],ds160:dsData,ds160_pct:Math.min(100,Math.round((filled/20)*100))}).eq('id',cid);
+  await db.from('casos').update({historial:hist[ca]||[],ds160:dsData,ds160_pct:Math.min(100,Math.round((filled/20)*100))}).eq('id',cid);
   const sv=document.getElementById('svi');if(sv){sv.classList.add('on');setTimeout(()=>sv.classList.remove('on'),1800);}
 }
 
