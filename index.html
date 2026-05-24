@@ -324,7 +324,7 @@ function showTab(t){
   document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['chat','ds160'][i]===t));
   document.getElementById('chat-page').classList.toggle('active',t==='chat');
   document.getElementById('ds160-page').classList.toggle('active',t==='ds160');
-  document.getElementById('abar').style.display=t==='chat'?'flex':'none';
+  document.getElementById('abar').style.display='none';
   if(t==='ds160')renderDS160();
 }
 
