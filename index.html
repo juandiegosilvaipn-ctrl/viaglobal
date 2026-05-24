@@ -278,7 +278,8 @@ async function login(){
 hist['tn']=data.visa==='tn'?data.historial||[]:[];
 hist['td']=data.visa==='td'?data.historial||[]:[];
 dsData=data.ds160||{};
-  firstMessage=hist[ca].length===0;
+  const visaHist=data.visa==='turista'?hist['turista']:data.visa==='tn'?hist['tn']:hist['td'];
+firstMessage=visaHist.length===0;
   document.getElementById('login-error').style.display='none';
   document.getElementById('login-wrap').style.display='none';
   document.getElementById('app-wrap').classList.add('active');
