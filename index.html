@@ -394,7 +394,9 @@ async function snd(){
   const time=getTime();
   hist[k].push({role:'user',content:text,time});
   rmsgs();
+  await asave();
   loading=true;
+
 
   // Si es el primer mensaje, mostrar mensaje de conexión primero
   if(firstMessage){
