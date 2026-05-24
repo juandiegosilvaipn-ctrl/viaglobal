@@ -333,7 +333,7 @@ function swAgent(a){
   currentAgent=a;
   document.querySelectorAll('.atab').forEach((t,i)=>t.classList.toggle('active',['turista','tn','td'][i]===a));
   rsb();rchdr();
-  if(a!==caseVisa){
+  if(caseVisa && a!==caseVisa){
     document.getElementById('msgs').innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:var(--ht)"><p style="font-size:13px">Este asesor es especialista en visa ${a==='tn'?'TN':a==='td'?'TD':'Turista'}.<br>Tu trámite es de visa ${caseVisa==='tn'?'TN':caseVisa==='td'?'TD':'Turista'} con ${AGENTS[caseVisa].fullName}.</p></div>`;
   } else {
     rmsgs();
