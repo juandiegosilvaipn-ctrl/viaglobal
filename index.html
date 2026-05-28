@@ -32,11 +32,7 @@ nav img{height:36px;width:auto;filter:brightness(0) invert(1)}
 .tab{padding:0 1rem;height:46px;display:flex;align-items:center;font-size:13px;color:rgba(255,255,255,.55);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;gap:6px}
 .tab:hover{color:rgba(255,255,255,.85)}
 .tab.active{color:#fff;border-bottom-color:#fff}
-.abar{background:var(--tdd);padding:.55rem 1.25rem;border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:8px;flex-shrink:0}
-.abar-lbl{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.07em;margin-right:4px}
-.atab{padding:4px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .18s}
-.atab:hover{background:rgba(255,255,255,.1);color:#fff}
-.atab.active{background:#fff;color:var(--tdd);font-weight:500;border-color:#fff}
+.abar{background:var(--tdd);padding:.55rem 1.25rem;border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:8px;flex-shrink:0;display:none}
 .chat-page{flex:1;display:none;flex-direction:column;min-height:0;overflow:hidden}
 .chat-page.active{display:flex}
 .amain{display:flex;flex:1;min-height:0;overflow:hidden}
@@ -102,6 +98,10 @@ nav img{height:36px;width:auto;filter:brightness(0) invert(1)}
 .ds-bar-wrap{flex:1}
 .ds-bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:6px}
 .ds-bar-fill{height:100%;background:var(--teal);border-radius:3px;transition:width .4s}
+.ds-missing{background:var(--gl);border-radius:10px;border:1px solid var(--gold);padding:1rem;margin-bottom:1rem}
+.ds-missing-title{font-size:11px;font-weight:500;color:var(--gold);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+.ds-missing-item{font-size:12px;color:var(--mt);padding:3px 0;border-bottom:1px solid rgba(186,117,23,.15)}
+.ds-missing-item:last-child{border:none}
 @media(max-width:580px){.sb{display:none}.ds-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -130,12 +130,6 @@ nav img{height:36px;width:auto;filter:brightness(0) invert(1)}
     <div class="tab active" onclick="showTab('chat')">💬 Mi asesor</div>
     <div class="tab" onclick="showTab('ds160')">📋 Mi DS-160</div>
   </div>
-  <div class="abar" id="abar">
-    <span class="abar-lbl">Tipo de visa</span>
-    <button class="atab active" onclick="swAgent('turista')">✈ Turista B1/B2</button>
-    <button class="atab" onclick="swAgent('tn')">💼 Visa TN</button>
-    <button class="atab" onclick="swAgent('td')">👨‍👩‍👧 Visa TD</button>
-  </div>
   <div class="chat-page active" id="chat-page">
     <div class="amain">
       <div class="sb" id="sb"></div>
@@ -161,6 +155,133 @@ const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const {createClient}=supabase;
 const db=createClient(SUPA_URL,SUPA_KEY);
 
+// ── DS-160 CAMPOS COMPLETOS ────────────────────────────────────────
+const DS_SECS=[
+  {t:'Datos personales',f:[
+    {k:'apellido',l:'Apellido(s)'},
+    {k:'nombre',l:'Nombre(s)'},
+    {k:'otros_nombres',l:'Otros nombres o alias'},
+    {k:'genero',l:'Género'},
+    {k:'estado_civil',l:'Estado civil'},
+    {k:'fecha_nac',l:'Fecha de nacimiento'},
+    {k:'lugar_nac',l:'Ciudad de nacimiento'},
+    {k:'estado_nac',l:'Estado de nacimiento'},
+    {k:'pais_nac',l:'País de nacimiento'},
+    {k:'nacionalidad',l:'Nacionalidad'},
+    {k:'otra_nacionalidad',l:'¿Tiene otra nacionalidad?'}
+  ]},
+  {t:'Contacto',f:[
+    {k:'direccion',l:'Dirección'},
+    {k:'ciudad',l:'Ciudad'},
+    {k:'estado_residencia',l:'Estado de residencia'},
+    {k:'cp',l:'Código postal'},
+    {k:'pais_residencia',l:'País de residencia'},
+    {k:'telefono',l:'Teléfono'},
+    {k:'telefono_trabajo',l:'Teléfono del trabajo'},
+    {k:'email',l:'Correo electrónico'}
+  ]},
+  {t:'Pasaporte',f:[
+    {k:'pasaporte_num',l:'Número de pasaporte'},
+    {k:'pasaporte_tipo',l:'Tipo de pasaporte'},
+    {k:'pasaporte_emision',l:'Fecha de emisión'},
+    {k:'pasaporte_exp',l:'Fecha de vencimiento'},
+    {k:'pasaporte_pais',l:'País de emisión'}
+  ]},
+  {t:'Datos familiares',f:[
+    {k:'padre_nombre',l:'Nombre completo del padre'},
+    {k:'padre_fecha_nac',l:'Fecha de nacimiento del padre'},
+    {k:'padre_en_usa',l:'¿Padre en EE.UU.?'},
+    {k:'madre_nombre',l:'Nombre completo de la madre'},
+    {k:'madre_fecha_nac',l:'Fecha de nacimiento de la madre'},
+    {k:'madre_en_usa',l:'¿Madre en EE.UU.?'},
+    {k:'familiar_en_usa',l:'¿Tiene familiar en EE.UU.?'},
+    {k:'familiar_nombre',l:'Nombre del familiar en EE.UU.'},
+    {k:'familiar_relacion',l:'Relación con el familiar en EE.UU.'},
+    {k:'familiar_estatus',l:'Estatus migratorio del familiar'}
+  ]},
+  {t:'Empleo',f:[
+    {k:'ocupacion',l:'Ocupación actual'},
+    {k:'empleador',l:'Nombre del empleador'},
+    {k:'empleador_direccion',l:'Dirección del empleador'},
+    {k:'empleador_telefono',l:'Teléfono del empleador'},
+    {k:'salario',l:'Salario mensual'},
+    {k:'descripcion_trabajo',l:'Descripción de funciones'},
+    {k:'empleador_usa',l:'Empleador en EE.UU.'},
+    {k:'puesto_usa',l:'Puesto en EE.UU.'},
+    {k:'salario_usa',l:'Salario en EE.UU.'},
+    {k:'profesion_tmec',l:'Profesión T-MEC'}
+  ]},
+  {t:'Datos del viaje',f:[
+    {k:'motivo_viaje',l:'Propósito del viaje'},
+    {k:'destino_usa',l:'Destino principal en EE.UU.'},
+    {k:'direccion_usa',l:'Dirección en EE.UU.'},
+    {k:'fecha_llegada',l:'Fecha estimada de llegada'},
+    {k:'duracion_estancia',l:'Duración de la estancia'},
+    {k:'quien_paga',l:'¿Quién paga el viaje?'},
+    {k:'contacto_usa',l:'Nombre del contacto en EE.UU.'},
+    {k:'contacto_usa_tel',l:'Teléfono del contacto en EE.UU.'},
+    {k:'contacto_usa_relacion',l:'Relación con el contacto en EE.UU.'}
+  ]},
+  {t:'Historial de viajes',f:[
+    {k:'ha_viajado_usa',l:'¿Ha visitado EE.UU. antes?'},
+    {k:'fecha_ultimo_viaje',l:'Fecha del último viaje a EE.UU.'},
+    {k:'duracion_ultimo_viaje',l:'Duración del último viaje'},
+    {k:'visa_previa',l:'¿Tiene visa americana previa?'},
+    {k:'visa_previa_num',l:'Número de visa anterior'},
+    {k:'visa_previa_fecha',l:'Fecha de emisión de visa anterior'},
+    {k:'visa_rechazada',l:'¿Le han negado una visa?'},
+    {k:'visa_rechazada_cuando',l:'¿Cuándo fue rechazada?'},
+    {k:'visa_rechazada_motivo',l:'Motivo del rechazo'}
+  ]},
+  {t:'Antecedentes y seguridad',f:[
+    {k:'antecedentes',l:'¿Tiene antecedentes penales?'},
+    {k:'deportado',l:'¿Ha sido deportado de EE.UU.?'},
+    {k:'overstay',l:'¿Ha permanecido más tiempo del permitido en EE.UU.?'},
+    {k:'fraude_migratorio',l:'¿Ha cometido fraude migratorio?'},
+    {k:'organizacion_terrorista',l:'¿Ha pertenecido a organización terrorista?'},
+    {k:'drogas',l:'¿Ha consumido o traficado drogas?'}
+  ]},
+  {t:'Visa TD — Dependiente',f:[
+    {k:'relacion_titular',l:'Relación con el titular TN'},
+    {k:'titular_nombre',l:'Nombre completo del titular TN'},
+    {k:'titular_visa',l:'Número de visa TN del titular'}
+  ]}
+];
+
+// Todos los campos requeridos para DS-160 completo
+const CAMPOS_REQUERIDOS=[
+  'apellido','nombre','genero','estado_civil','fecha_nac','lugar_nac','pais_nac','nacionalidad',
+  'direccion','ciudad','telefono','email',
+  'pasaporte_num','pasaporte_emision','pasaporte_exp',
+  'padre_nombre','padre_fecha_nac','madre_nombre','madre_fecha_nac',
+  'ocupacion','empleador','salario',
+  'motivo_viaje','destino_usa','duracion_estancia','quien_paga',
+  'ha_viajado_usa','visa_previa','visa_rechazada',
+  'antecedentes','deportado'
+];
+
+const DS160_VACIO={
+  apellido:'',nombre:'',otros_nombres:'',genero:'',estado_civil:'',
+  fecha_nac:'',lugar_nac:'',estado_nac:'',pais_nac:'',nacionalidad:'Mexico',otra_nacionalidad:'No',
+  direccion:'',ciudad:'',estado_residencia:'',cp:'',pais_residencia:'Mexico',
+  telefono:'',telefono_trabajo:'',email:'',
+  pasaporte_num:'',pasaporte_tipo:'',pasaporte_emision:'',pasaporte_exp:'',pasaporte_pais:'Mexico',
+  padre_nombre:'',padre_fecha_nac:'',padre_en_usa:'No',
+  madre_nombre:'',madre_fecha_nac:'',madre_en_usa:'No',
+  familiar_en_usa:'',familiar_nombre:'',familiar_relacion:'',familiar_estatus:'',
+  ocupacion:'',empleador:'',empleador_direccion:'',empleador_telefono:'',
+  salario:'',descripcion_trabajo:'',empleador_usa:'',puesto_usa:'',salario_usa:'',profesion_tmec:'',
+  motivo_viaje:'',destino_usa:'',direccion_usa:'',fecha_llegada:'',
+  duracion_estancia:'',quien_paga:'',
+  contacto_usa:'',contacto_usa_tel:'',contacto_usa_relacion:'',
+  ha_viajado_usa:'',fecha_ultimo_viaje:'',duracion_ultimo_viaje:'',
+  visa_previa:'',visa_previa_num:'',visa_previa_fecha:'',
+  visa_rechazada:'No',visa_rechazada_cuando:'',visa_rechazada_motivo:'',
+  antecedentes:'No',deportado:'No',overstay:'No',fraude_migratorio:'No',
+  organizacion_terrorista:'No',drogas:'No',
+  relacion_titular:'',titular_nombre:'',titular_visa:''
+};
+
 const AGENTS={
   turista:{
     name:'Ana',fullName:'Ana García',emoji:'👩',bg:'#E1F5EE',desc:'Tu asesora de visa turista',
@@ -168,43 +289,58 @@ const AGENTS={
     status:['Evaluación aprobada','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
     qa:['¿Qué documentos necesito?','¿Cuánto tarda el proceso?','¿Cómo es la entrevista?','¿Cuánto dinero necesito?'],
     connectMsg:'¡Hola! 👋 Un momento, te conecto con tu asesora...',
-    prompt:`Eres Ana García, asesora experta en visa de turista B1/B2 en Vía Global. Eres una persona real, cálida y empática, NO un bot ni IA. Tienes 8 años de experiencia gestionando visas de turista para mexicanos.
+    prompt:`Eres Ana García, asesora experta en visa de turista B1/B2 en Vía Global. Eres una persona real, cálida y empática, NO un bot. Tienes 8 años de experiencia.
 
-PERSONALIDAD:
-- Hablas como en WhatsApp — natural, cercana, sin sonar corporativa
-- Usas emojis con moderación (máximo 1 por mensaje)
-- Preguntas de una en una, nunca en lista
-- Frases como "qué bueno que me escribes", "no te preocupes", "te cuento"
-- NUNCA menciones que eres IA. Si preguntan si eres humana, di que sí
+PERSONALIDAD: Hablas como WhatsApp — natural y cercana. Máximo 1-2 líneas por mensaje. Sin listas. Emojis con moderación. NUNCA digas que eres IA.
 
-FORMA DE ESCRIBIR:
-- Máximo 1-2 líneas por mensaje, como un SMS
-- Sin listas — todo en conversación natural
+MISIÓN: Recopilar TODOS los campos del DS-160 de forma conversacional, uno por uno, de manera natural. No los pidas todos de golpe.
+
+CAMPOS QUE DEBES RECOPILAR (en orden natural de conversación):
+1. Nombre(s) y apellido(s)
+2. Fecha de nacimiento
+3. Lugar de nacimiento (ciudad, estado, país)
+4. Género
+5. Estado civil
+6. Dirección completa (calle, ciudad, estado, CP)
+7. Teléfono y correo electrónico
+8. Teléfono del trabajo
+9. Número de pasaporte, fecha de emisión y vencimiento
+10. Nombre completo del padre y fecha de nacimiento
+11. Nombre completo de la madre y fecha de nacimiento
+12. ¿Padre o madre en EE.UU.?
+13. ¿Tiene familiar en EE.UU.? (nombre, relación, estatus migratorio)
+14. Ocupación actual, empleador, dirección y teléfono del empleador
+15. Salario mensual y descripción de funciones
+16. Motivo del viaje
+17. Destino principal en EE.UU. y dirección donde se hospedará
+18. Fecha estimada de llegada y duración de la estancia
+19. ¿Quién paga el viaje?
+20. Contacto en EE.UU. (nombre, teléfono, relación)
+21. ¿Ha viajado antes a EE.UU.? ¿Cuándo y cuánto tiempo?
+22. ¿Tiene visa americana previa? Número y fecha
+23. ¿Le han negado una visa? ¿Cuándo y por qué?
+24. ¿Antecedentes penales?
+25. ¿Ha sido deportado de EE.UU.?
+26. ¿Ha permanecido más tiempo del permitido en EE.UU.?
+27. ¿Ha cometido fraude migratorio?
+28. ¿Ha pertenecido a organización terrorista?
+29. ¿Ha consumido o traficado drogas?
 
 CONOCIMIENTO EXPERTO:
-- El estado de cuenta es el documento más importante — 3 meses con saldo promedio mínimo de $15,000 MXN
-- Vínculos con México son clave: empleo estable, familia, propiedades
-- Tener visa americana anterior (aunque vencida) aumenta mucho las posibilidades
-- Nunca mentir en la entrevista — los oficiales detectan inconsistencias
-- Vestir formal y llegar 30 min antes a la entrevista
-- MRV Fee actual: $185 USD. Visa Integrity Fee de $250 USD aprobada por ley pero AÚN NO en vigor
-- Servicio Vía Global: $2,250 MXN precio de lanzamiento, solo primeras 10 personas. Solo se cobra si la visa es APROBADA
-- Si preguntan por costos o quieren hablar con alguien: "Escríbenos al WhatsApp +52 479 225 9605 📲"
+- Estados de cuenta: saldo promedio mínimo $15,000 MXN, 3 meses de historial
+- Vínculos con México son clave: empleo, familia, propiedades
+- Visa anterior (aunque vencida) aumenta posibilidades
+- MRV Fee: $185 USD. Visa Integrity Fee $250 USD aprobada pero AÚN NO en vigor
+- Servicio Vía Global: $2,250 MXN precio lanzamiento. Solo se cobra si la visa es APROBADA
+- Contacto: WhatsApp +52 479 225 9605
 
-PREGUNTAS FRECUENTES DEL OFICIAL CONSULAR:
-¿Cuál es el motivo de su visita? ¿Cuánto tiempo planea quedarse? ¿Tiene familia en EE.UU.? ¿Dónde trabaja y cuánto gana? ¿Tiene propiedades en México?
+SOLO cuando tengas TODOS los 29 campos completos, di:
+"¡Listo! Ya tengo toda tu información completa 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
 
-ERRORES COMUNES QUE CAUSAN RECHAZO:
-Estados de cuenta con saldo bajo, no tener empleo formal, motivo del viaje vago, familiares sin documentos en EE.UU., visas rechazadas previas sin explicar qué cambió.
-
-CUANDO TENGAS nombre, apellido, fecha de nacimiento, ocupación, empleador y motivo de viaje, di exactamente:
-"¡Listo! Ya tengo toda tu información 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
-
-En CADA respuesta incluye al final:
-<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","motivo_viaje":"","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
+En CADA respuesta incluye al final el JSON actualizado con todos los datos que tengas:
+<DS160>{"apellido":"","nombre":"","otros_nombres":"","genero":"","estado_civil":"","fecha_nac":"","lugar_nac":"","estado_nac":"","pais_nac":"","nacionalidad":"Mexico","otra_nacionalidad":"No","direccion":"","ciudad":"","estado_residencia":"","cp":"","pais_residencia":"Mexico","telefono":"","telefono_trabajo":"","email":"","pasaporte_num":"","pasaporte_tipo":"","pasaporte_emision":"","pasaporte_exp":"","pasaporte_pais":"Mexico","padre_nombre":"","padre_fecha_nac":"","padre_en_usa":"No","madre_nombre":"","madre_fecha_nac":"","madre_en_usa":"No","familiar_en_usa":"","familiar_nombre":"","familiar_relacion":"","familiar_estatus":"","ocupacion":"","empleador":"","empleador_direccion":"","empleador_telefono":"","salario":"","descripcion_trabajo":"","motivo_viaje":"","destino_usa":"","direccion_usa":"","fecha_llegada":"","duracion_estancia":"","quien_paga":"","contacto_usa":"","contacto_usa_tel":"","contacto_usa_relacion":"","ha_viajado_usa":"","fecha_ultimo_viaje":"","duracion_ultimo_viaje":"","visa_previa":"","visa_previa_num":"","visa_previa_fecha":"","visa_rechazada":"No","visa_rechazada_cuando":"","visa_rechazada_motivo":"","antecedentes":"No","deportado":"No","overstay":"No","fraude_migratorio":"No","organizacion_terrorista":"No","drogas":"No"}</DS160>
 
 Habla siempre en español de México.`
-
   },
   tn:{
     name:'Carlos',fullName:'Carlos Mendoza',emoji:'👨',bg:'#E6F1FB',desc:'Tu asesor de visa TN',
@@ -212,114 +348,118 @@ Habla siempre en español de México.`
     status:['Evaluación aprobada','Profesión verificada T-MEC','Carta oferta validada','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
     qa:['¿Qué es la visa TN?','¿Mi profesión califica?','¿Qué necesita la carta oferta?','¿Cuánto tarda?'],
     connectMsg:'¡Hola! 👋 Dame un momento, te paso con tu asesor...',
-    prompt:`Eres Carlos Mendoza, asesor experto en visa TN bajo el T-MEC en Vía Global. Eres una persona real, profesional y accesible, NO un bot. Tienes 6 años de experiencia gestionando visas TN para profesionistas mexicanos.
+    prompt:`Eres Carlos Mendoza, asesor experto en visa TN bajo el T-MEC en Vía Global. Eres una persona real, profesional y accesible, NO un bot. Tienes 6 años de experiencia.
 
-PERSONALIDAD:
-- Directo pero cálido — como un colega de confianza
-- Preguntas de una en una
-- Frases como "perfecto", "eso está muy bien", "te explico"
-- NUNCA menciones que eres IA
+PERSONALIDAD: Directo pero cálido. Máximo 1-2 líneas por mensaje. Sin listas. NUNCA digas que eres IA.
 
-FORMA DE ESCRIBIR:
-- Máximo 1-2 líneas por mensaje, como un SMS
-- Sin listas — todo fluye natural
+MISIÓN: Recopilar TODOS los campos del DS-160 de forma conversacional, uno por uno.
+
+CAMPOS QUE DEBES RECOPILAR:
+1. Nombre(s) y apellido(s)
+2. Fecha de nacimiento
+3. Lugar de nacimiento (ciudad, estado, país)
+4. Género y estado civil
+5. Dirección completa (calle, ciudad, estado, CP)
+6. Teléfono, teléfono del trabajo y correo
+7. Número de pasaporte, fecha de emisión y vencimiento
+8. Nombre completo del padre y fecha de nacimiento
+9. Nombre completo de la madre y fecha de nacimiento
+10. ¿Padre o madre en EE.UU.?
+11. ¿Familiar en EE.UU.? (nombre, relación, estatus)
+12. Profesión y si está en la lista T-MEC
+13. Título universitario y cédula profesional
+14. Empleador actual en México, dirección, teléfono
+15. Salario mensual y descripción de funciones
+16. Empleador americano, EIN, puesto y salario en dólares
+17. Destino en EE.UU. y dirección donde vivirá
+18. Fecha estimada de llegada y duración de la estancia
+19. ¿Quién paga el viaje?
+20. Contacto en EE.UU. (nombre, teléfono, relación)
+21. ¿Ha viajado antes a EE.UU.?
+22. ¿Tiene visa americana previa?
+23. ¿Le han negado una visa?
+24. Antecedentes penales, deportación, fraude migratorio, drogas
 
 CONOCIMIENTO EXPERTO:
-- La carta oferta del empleador americano es lo más crítico — debe tener: nombre del puesto, descripción de actividades, salario en dólares, duración, nombre y EIN del empleador
-- Profesiones elegibles T-MEC: Ingenieros, Contadores, Médicos, Enfermeras, Dentistas, Veterinarios, Arquitectos, Abogados, Científicos, Farmacéuticos, Nutriólogos, Fisioterapeutas, Psicólogos, Economistas, Analistas de sistemas, entre otros
-- El puesto debe corresponder exactamente a la profesión del título universitario
-- Se necesita cédula profesional vigente obligatoriamente
-- MRV Fee actual: $185 USD. Visa Integrity Fee de $250 USD aprobada pero AÚN NO en vigor
-- Servicio Vía Global: $5,000 MXN precio de lanzamiento. Solo se cobra si la visa es APROBADA
-- Si preguntan por costos o quieren hablar con alguien: "Escríbenos al WhatsApp +52 479 225 9605 📲"
+- Carta oferta es LO MÁS CRÍTICO: debe tener puesto, salario en dólares, duración, EIN del empleador
+- Profesiones T-MEC: Ingenieros, Contadores, Médicos, Arquitectos, Abogados, Científicos, Farmacéuticos, Analistas de sistemas, entre otros
+- MRV Fee: $185 USD. Visa Integrity Fee $250 USD aprobada pero AÚN NO en vigor
+- Servicio Vía Global: $5,000 MXN precio lanzamiento. Solo se cobra si la visa es APROBADA
+- Contacto: WhatsApp +52 479 225 9605
 
-ERRORES COMUNES QUE CAUSAN RECHAZO:
-Carta oferta mal redactada o incompleta, profesión no está en la lista T-MEC, el puesto no corresponde al título, no tener cédula profesional, empleador sin EIN.
-
-PREGUNTAS FRECUENTES DEL OFICIAL:
-¿Cuál es su profesión? ¿Qué actividades realizará en EE.UU.? ¿Para qué empresa trabajará? ¿Cuánto tiempo estará? ¿Tiene intención de quedarse permanentemente?
-
-CUANDO TENGAS nombre, apellido, profesión, empleador americano y puesto, di exactamente:
-"¡Listo! Ya tengo toda tu información 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
+SOLO cuando tengas TODOS los campos completos, di:
+"¡Listo! Ya tengo toda tu información completa 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
 
 En CADA respuesta incluye al final:
-<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","empleador_usa":"","puesto_usa":"","salario_usa":"","profesion_tmec":"","motivo_viaje":"Trabajo temporal TN","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
+<DS160>{"apellido":"","nombre":"","otros_nombres":"","genero":"","estado_civil":"","fecha_nac":"","lugar_nac":"","estado_nac":"","pais_nac":"","nacionalidad":"Mexico","otra_nacionalidad":"No","direccion":"","ciudad":"","estado_residencia":"","cp":"","pais_residencia":"Mexico","telefono":"","telefono_trabajo":"","email":"","pasaporte_num":"","pasaporte_tipo":"","pasaporte_emision":"","pasaporte_exp":"","pasaporte_pais":"Mexico","padre_nombre":"","padre_fecha_nac":"","padre_en_usa":"No","madre_nombre":"","madre_fecha_nac":"","madre_en_usa":"No","familiar_en_usa":"","familiar_nombre":"","familiar_relacion":"","familiar_estatus":"","ocupacion":"","empleador":"","empleador_direccion":"","empleador_telefono":"","salario":"","descripcion_trabajo":"","empleador_usa":"","puesto_usa":"","salario_usa":"","profesion_tmec":"","motivo_viaje":"Trabajo temporal TN","destino_usa":"","direccion_usa":"","fecha_llegada":"","duracion_estancia":"","quien_paga":"","contacto_usa":"","contacto_usa_tel":"","contacto_usa_relacion":"","ha_viajado_usa":"","fecha_ultimo_viaje":"","duracion_ultimo_viaje":"","visa_previa":"","visa_previa_num":"","visa_previa_fecha":"","visa_rechazada":"No","visa_rechazada_cuando":"","visa_rechazada_motivo":"","antecedentes":"No","deportado":"No","overstay":"No","fraude_migratorio":"No","organizacion_terrorista":"No","drogas":"No"}</DS160>
 
-Habla siempre en español de México.`
-
+Habla en español de México.`
   },
   td:{
     name:'Sofía',fullName:'Sofía Ramírez',emoji:'👩',bg:'#EEEDFE',desc:'Tu asesora de visa TD',
-    checklist:['Pasaporte del dependiente','Foto fondo blanco','Acta de nacimiento','Acta de matrimonio','Acta de nacimiento del titular','Copia de visa TN del titular','Carta de empleo del titular','DS-160','Pago MRV fee','Cita conjunta con titular'],
+    checklist:['Pasaporte del dependiente','Foto fondo blanco','Acta de nacimiento','Acta de matrimonio apostillada','Acta de nacimiento del titular','Copia de visa TN del titular','Carta de empleo del titular','DS-160','Pago MRV fee','Cita conjunta con titular'],
     status:['TN del titular verificado','Vínculo familiar documentado','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
     qa:['¿Qué es la visa TD?','¿Qué documentos necesito?','¿Puedo trabajar con TD?','¿La cita es con mi familiar?'],
     connectMsg:'¡Hola! 👋 Espera tantito, te conecto con tu asesora...',
-    prompt:`Eres Sofía Ramírez, asesora experta en visa TD para dependientes de titulares TN en Vía Global. Eres una persona real, muy cálida y paciente, NO un bot. Tienes 5 años de experiencia ayudando a familias a reunirse en EE.UU.
+    prompt:`Eres Sofía Ramírez, asesora experta en visa TD para dependientes de titulares TN en Vía Global. Eres una persona real, muy cálida y paciente, NO un bot. Tienes 5 años de experiencia.
 
-PERSONALIDAD:
-- Muy empática y tranquilizadora — mudarse con la familia genera mucha incertidumbre
-- Hablas como una amiga que sabe del tema
-- Preguntas de una en una con mucha paciencia
-- Frases como "tranquila/o", "es más sencillo de lo que parece", "yo te guío paso a paso"
-- NUNCA menciones que eres IA
+PERSONALIDAD: Muy empática y tranquilizadora. Máximo 1-2 líneas por mensaje. Sin listas. NUNCA digas que eres IA.
 
-FORMA DE ESCRIBIR:
-- Máximo 1-2 líneas por mensaje, como un SMS
-- Muy conversacional y cálido
+MISIÓN: Recopilar TODOS los campos del DS-160 del dependiente de forma conversacional.
+
+CAMPOS QUE DEBES RECOPILAR:
+1. Nombre(s) y apellido(s) del dependiente
+2. Relación con el titular TN (cónyuge o hijo/a)
+3. Nombre completo del titular TN y número de visa TN
+4. Fecha de nacimiento del dependiente
+5. Lugar de nacimiento (ciudad, estado, país)
+6. Género y estado civil
+7. Dirección completa
+8. Teléfono y correo electrónico
+9. Número de pasaporte, fecha de emisión y vencimiento
+10. Nombre completo del padre y fecha de nacimiento
+11. Nombre completo de la madre y fecha de nacimiento
+12. ¿Familiar en EE.UU.? (además del titular)
+13. Ocupación actual (o "estudiante" si aplica)
+14. Destino en EE.UU. y dirección donde vivirá
+15. Fecha estimada de llegada y duración de la estancia
+16. ¿Quién paga el viaje?
+17. ¿Ha viajado antes a EE.UU.?
+18. ¿Tiene visa americana previa?
+19. ¿Le han negado una visa?
+20. Antecedentes penales, deportación, fraude migratorio
 
 CONOCIMIENTO EXPERTO:
-- La visa TD aplica SOLO para cónyuge e hijos menores de 21 años del titular TN — no para padres, hermanos ni otros familiares
-- La visa TD NO da derecho a trabajar en EE.UU. bajo ninguna circunstancia — los hijos sí pueden estudiar
-- Si el TN del titular se cancela o vence, el TD también pierde validez automáticamente
-- Tramitar TD en la misma cita que el TN es lo más recomendable — ahorra tiempo y el oficial ya conoce el caso
-- El acta de matrimonio debe estar apostillada
-- Cada dependiente llena su propio DS-160 y paga su propio MRV fee
-- MRV Fee actual: $185 USD por dependiente. Visa Integrity Fee de $250 USD aprobada pero AÚN NO en vigor
-- Servicio Vía Global: $2,500 MXN por dependiente, precio de lanzamiento. Solo se cobra si la visa es APROBADA
-- Si preguntan por costos o quieren hablar con alguien: "Escríbenos al WhatsApp +52 479 225 9605 📲"
+- TD aplica SOLO para cónyuge e hijos menores de 21 años — no para padres ni hermanos
+- TD NO da derecho a trabajar — los hijos sí pueden estudiar
+- Acta de matrimonio debe estar apostillada
+- Si el TN del titular vence o se cancela, el TD también
+- Tramitar en la misma cita que el titular es lo más recomendable
+- MRV Fee: $185 USD por dependiente. Visa Integrity Fee $250 USD aprobada pero AÚN NO en vigor
+- Servicio Vía Global: $2,500 MXN por dependiente precio lanzamiento. Solo se cobra si se aprueba
+- Contacto: WhatsApp +52 479 225 9605
 
-ERRORES COMUNES:
-No apostillar el acta de matrimonio, intentar tramitar TD para familiares que no califican, no llevar documentos completos del titular TN.
-
-CUANDO TENGAS nombre, apellido, relación con titular y nombre del titular TN, di exactamente:
-"¡Listo! Ya tengo toda tu información 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
+SOLO cuando tengas TODOS los campos completos, di:
+"¡Listo! Ya tengo toda tu información completa 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
 
 En CADA respuesta incluye al final:
-<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","relacion_titular":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","titular_nombre":"","titular_visa":"","motivo_viaje":"Acompañar titular TN","destino_usa":"","duracion_estancia":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
+<DS160>{"apellido":"","nombre":"","otros_nombres":"","genero":"","estado_civil":"","fecha_nac":"","lugar_nac":"","estado_nac":"","pais_nac":"","nacionalidad":"Mexico","otra_nacionalidad":"No","relacion_titular":"","titular_nombre":"","titular_visa":"","direccion":"","ciudad":"","estado_residencia":"","cp":"","pais_residencia":"Mexico","telefono":"","telefono_trabajo":"","email":"","pasaporte_num":"","pasaporte_tipo":"","pasaporte_emision":"","pasaporte_exp":"","pasaporte_pais":"Mexico","padre_nombre":"","padre_fecha_nac":"","padre_en_usa":"No","madre_nombre":"","madre_fecha_nac":"","madre_en_usa":"No","familiar_en_usa":"","familiar_nombre":"","familiar_relacion":"","familiar_estatus":"","ocupacion":"","motivo_viaje":"Acompañar titular TN","destino_usa":"","direccion_usa":"","fecha_llegada":"","duracion_estancia":"","quien_paga":"","contacto_usa":"","contacto_usa_tel":"","contacto_usa_relacion":"","ha_viajado_usa":"","fecha_ultimo_viaje":"","visa_previa":"","visa_previa_num":"","visa_rechazada":"No","visa_rechazada_cuando":"","antecedentes":"No","deportado":"No","overstay":"No","fraude_migratorio":"No","organizacion_terrorista":"No","drogas":"No"}</DS160>
 
-Habla siempre en español de México.`
-
-  },
+Habla en español de México.`
+  }
 };
 
-const DS_SECS=[
-  {t:'Datos personales',f:[{k:'apellido',l:'Apellido(s)'},{k:'nombre',l:'Nombre(s)'},{k:'fecha_nac',l:'Fecha de nacimiento'},{k:'lugar_nac',l:'Lugar de nacimiento'},{k:'nacionalidad',l:'Nacionalidad'},{k:'estado_civil',l:'Estado civil'}]},
-  {t:'Contacto',f:[{k:'direccion',l:'Dirección'},{k:'telefono',l:'Teléfono'},{k:'email',l:'Correo electrónico'}]},
-  {t:'Pasaporte',f:[{k:'pasaporte_num',l:'Número de pasaporte'},{k:'pasaporte_exp',l:'Fecha de vencimiento'}]},
-  {t:'Empleo',f:[{k:'ocupacion',l:'Ocupación'},{k:'empleador',l:'Empleador en México'},{k:'salario',l:'Salario mensual'},{k:'empleador_usa',l:'Empleador en EE.UU.'},{k:'puesto_usa',l:'Puesto en EE.UU.'},{k:'salario_usa',l:'Salario en EE.UU.'},{k:'profesion_tmec',l:'Profesión T-MEC'}]},
-  {t:'Viaje',f:[{k:'motivo_viaje',l:'Propósito del viaje'},{k:'destino_usa',l:'Destino en EE.UU.'},{k:'duracion_estancia',l:'Duración de estancia'},{k:'contacto_usa',l:'Contacto en EE.UU.'}]},
-  {t:'Historial migratorio',f:[{k:'ha_viajado_usa',l:'Ha visitado EE.UU.'},{k:'visa_previa',l:'Visa americana previa'},{k:'visa_rechazada',l:'Visa rechazada antes'},{k:'antecedentes',l:'Antecedentes penales'},{k:'relacion_titular',l:'Relación con titular TN'},{k:'titular_nombre',l:'Nombre titular TN'},{k:'titular_visa',l:'Visa TN del titular'}]}
-];
-
 // ── STATE ─────────────────────────────────────────────────────────
-let caseId=null;
-let caseVisa='turista';
-let messages=[];  // single array for current case
-let dsData={};
-let loading=false;
-let isFirstMessage=true;
-let currentAgent='turista';
+let caseId=null,caseVisa='turista',messages=[],dsData={},loading=false,isFirstMessage=true,currentAgent='turista',currentCodigo='';
 
 // ── SUPABASE ──────────────────────────────────────────────────────
 async function saveToSupabase(){
   if(!caseId)return;
   try{
-    const filled=Object.values(dsData).filter(v=>v&&v!=='').length;
-    const pct=Math.min(100,Math.round((filled/20)*100));
+    const filled=CAMPOS_REQUERIDOS.filter(k=>dsData[k]&&dsData[k]!=='').length;
+    const pct=Math.min(100,Math.round((filled/CAMPOS_REQUERIDOS.length)*100));
     const {data:caso}=await db.from('casos').update({
-      historial:messages,
-      ds160:dsData,
-      ds160_pct:pct
+      historial:messages,ds160:dsData,ds160_pct:pct
     }).eq('id',caseId).select().single();
     flashSaved();
     if(pct>=100&&caso&&!caso.notificado){
@@ -328,21 +468,14 @@ async function saveToSupabase(){
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-          clienteNombre:caso.nombre||'Cliente',
+          clienteNombre:caso.nombre||dsData.nombre||'Cliente',
           visa:caseVisa,
-          codigo:caso.codigo_cliente||''
+          codigo:currentCodigo
         })
       });
-      messages.push({
-        role:'assistant',
-        content:'🎉 ¡Tu DS-160 está completo! En breve nos ponemos en contacto contigo para los siguientes pasos.',
-        time:getTime()
-      });
-      rmsgs();
     }
   }catch(e){console.error('Save error:',e);}
 }
-
 
 function flashSaved(){
   const sv=document.getElementById('svi');
@@ -356,11 +489,9 @@ async function login(){
   try{
     const {data,error}=await db.from('casos').select('*').eq('codigo_cliente',codigo).single();
     if(error||!data){showError('Código no válido. Verifica con tu gestor.');return;}
-    caseId=data.id;
-    caseVisa=data.visa||'turista';
-    currentAgent=caseVisa;
+    caseId=data.id;caseVisa=data.visa||'turista';currentAgent=caseVisa;currentCodigo=codigo;
     messages=Array.isArray(data.historial)?data.historial:[];
-    dsData=data.ds160&&typeof data.ds160==='object'?data.ds160:{};
+    dsData=data.ds160&&typeof data.ds160==='object'?{...DS160_VACIO,...data.ds160}:{...DS160_VACIO};
     isFirstMessage=messages.length===0;
     document.getElementById('login-error').style.display='none';
     document.getElementById('login-wrap').style.display='none';
@@ -371,13 +502,10 @@ async function login(){
   }catch(e){showError('Error de conexión. Intenta de nuevo.');}
 }
 
-function showError(msg){
-  const el=document.getElementById('login-error');
-  el.textContent=msg;el.style.display='block';
-}
+function showError(msg){const el=document.getElementById('login-error');el.textContent=msg;el.style.display='block';}
 
 function logout(){
-  caseId=null;messages=[];dsData={};isFirstMessage=true;
+  caseId=null;messages=[];dsData={};isFirstMessage=true;currentCodigo='';
   document.getElementById('login-wrap').style.display='flex';
   document.getElementById('app-wrap').classList.remove('active');
   document.getElementById('nav-user').style.display='none';
@@ -389,30 +517,14 @@ function showTab(t){
   document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['chat','ds160'][i]===t));
   document.getElementById('chat-page').classList.toggle('active',t==='chat');
   document.getElementById('ds160-page').classList.toggle('active',t==='ds160');
-  document.getElementById('abar').style.display='none';
   if(t==='ds160')renderDS160();
 }
 
 // ── AGENT ─────────────────────────────────────────────────────────
 function swAgent(a){
   currentAgent=a;
-  document.querySelectorAll('.atab').forEach((t,i)=>t.classList.toggle('active',['turista','tn','td'][i]===a));
-  rsb();rchdr();rqa();
-  if(a===caseVisa){
-    rmsgs();
-    document.getElementById('inp').disabled=false;
-    document.querySelector('.sndbtn').disabled=false;
-  } else {
-    document.getElementById('msgs').innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:var(--ht)">
-      <div style="font-size:30px;margin-bottom:8px">🔒</div>
-      <p style="font-size:13px;font-weight:500;color:var(--tx);margin-bottom:4px">Asesor no disponible</p>
-      <p style="font-size:12px">Tu trámite es de visa <strong>${caseVisa==='tn'?'TN':caseVisa==='td'?'TD':'Turista'}</strong>.<br>Tu asesor es <strong>${AGENTS[caseVisa].fullName}</strong>.</p>
-    </div>`;
-    document.getElementById('inp').disabled=true;
-    document.querySelector('.sndbtn').disabled=true;
-  }
+  rsb();rchdr();rmsgs();rqa();
 }
-
 
 function rchdr(){
   const a=AGENTS[currentAgent];
@@ -454,14 +566,9 @@ function rmsgs(){
     const time=msg.time||'';
     if(msg.role==='assistant'){
       const a=AGENTS[currentAgent];
-      return `<div class="msg ag">
-        <div class="mav" style="background:${a.bg}">${a.emoji}</div>
-        <div><div class="mb">${fmt(clean)}</div><div class="msg-time">${time}</div></div>
-      </div>`;
+      return `<div class="msg ag"><div class="mav" style="background:${a.bg}">${a.emoji}</div><div><div class="mb">${fmt(clean)}</div><div class="msg-time">${time}</div></div></div>`;
     }
-    return `<div class="msg us">
-      <div><div class="mb">${clean}</div><div class="msg-time">${time}</div></div>
-    </div>`;
+    return `<div class="msg us"><div><div class="mb">${clean}</div><div class="msg-time">${time}</div></div></div>`;
   }).join('');
   c.scrollTop=c.scrollHeight;
 }
@@ -474,29 +581,21 @@ function rqa(){
 function showTypingIndicator(){
   const id='typing-'+Date.now();
   const a=AGENTS[currentAgent];
-  const d=document.createElement('div');
-  d.className='typing-wrap';d.id=id;
-  d.innerHTML=`<div class="mav" style="background:${a.bg}">${a.emoji}</div>
-    <div class="typing-bubble"><span></span><span></span><span></span></div>`;
-  const c=document.getElementById('msgs');
-  c.appendChild(d);c.scrollTop=c.scrollHeight;
+  const d=document.createElement('div');d.className='typing-wrap';d.id=id;
+  d.innerHTML=`<div class="mav" style="background:${a.bg}">${a.emoji}</div><div class="typing-bubble"><span></span><span></span><span></span></div>`;
+  const c=document.getElementById('msgs');c.appendChild(d);c.scrollTop=c.scrollHeight;
   return id;
 }
 
 function showSysMsg(text){
-  const d=document.createElement('div');
-  d.className='sys-msg';d.textContent=text;
-  const c=document.getElementById('msgs');
-  c.appendChild(d);c.scrollTop=c.scrollHeight;
+  const d=document.createElement('div');d.className='sys-msg';d.textContent=text;
+  const c=document.getElementById('msgs');c.appendChild(d);c.scrollTop=c.scrollHeight;
 }
 
 function parseDS(text){
   const m=text.match(/<DS160>([\s\S]*?)<\/DS160>/);
   if(!m)return;
-  try{
-    const p=JSON.parse(m[1]);
-    Object.entries(p).forEach(([k,v])=>{if(v&&v!=='')dsData[k]=v;});
-  }catch(e){}
+  try{const p=JSON.parse(m[1]);Object.entries(p).forEach(([k,v])=>{if(v&&v!=='')dsData[k]=v;});}catch(e){}
 }
 
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
@@ -507,63 +606,38 @@ async function snd(){
   const inp=document.getElementById('inp');
   const text=inp.value.trim();
   if(!text||loading)return;
-
   inp.value='';inp.style.height='auto';
   loading=true;
-
-  // Add user message
   const userMsg={role:'user',content:text,time:getTime()};
   messages.push(userMsg);
   rmsgs();
-
-  // Save immediately after user message
   await saveToSupabase();
-
-  // First message — show connect message
   if(isFirstMessage){
     isFirstMessage=false;
     showSysMsg(AGENTS[currentAgent].connectMsg);
   }
-
-  // Human delay: 8-18 seconds
   const delay=8000+Math.random()*10000;
   const tid=showTypingIndicator();
   await sleep(delay);
-
   try{
     const r=await fetch('/api/chat',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        system:AGENTS[currentAgent].prompt,
-        messages:messages.map(m=>({role:m.role,content:m.content}))
-      })
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system:AGENTS[currentAgent].prompt,messages:messages.map(m=>({role:m.role,content:m.content}))})
     });
     const data=await r.json();
     if(!r.ok)throw new Error(data.error||'Error');
     const reply=data.text||'Sin respuesta.';
-
     document.getElementById(tid)?.remove();
-
-    // Parse DS160 data from reply
     parseDS(reply);
-
-    // Add assistant message
     const assistantMsg={role:'assistant',content:reply,time:getTime()};
     messages.push(assistantMsg);
     rmsgs();
-
-    // Save after assistant response
     await saveToSupabase();
-
   }catch(e){
     document.getElementById(tid)?.remove();
-    const errMsg={role:'assistant',content:'Perdona, tuve un problemita 😅 ¿Me repites?',time:getTime()};
-    messages.push(errMsg);
+    messages.push({role:'assistant',content:'Perdona, tuve un problemita 😅 ¿Me repites?',time:getTime()});
     rmsgs();
-    await saveToSupabase();
   }
-
   loading=false;
 }
 
@@ -572,26 +646,42 @@ function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,
 
 function renderDS160(){
   const data=dsData||{};
-  const filled=Object.values(data).filter(v=>v&&v!=='').length;
-  const pct=Math.min(100,Math.round((filled/20)*100));
+  const filled=CAMPOS_REQUERIDOS.filter(k=>data[k]&&data[k]!=='').length;
+  const pct=Math.min(100,Math.round((filled/CAMPOS_REQUERIDOS.length)*100));
+  const missing=CAMPOS_REQUERIDOS.filter(k=>!data[k]||data[k]==='');
+  const missingLabels=missing.map(k=>{
+    for(const sec of DS_SECS){const f=sec.f.find(f=>f.k===k);if(f)return f.l;}
+    return k;
+  });
+
   let html=`<div class="ds-progress">
     <div class="ds-pct">${pct}%</div>
     <div class="ds-bar-wrap">
       <p style="font-size:13px;font-weight:500">Tu formulario DS-160</p>
-      <p style="font-size:12px;color:var(--mt);margin-top:2px">${filled} campos completados</p>
+      <p style="font-size:12px;color:var(--mt);margin-top:2px">${filled} de ${CAMPOS_REQUERIDOS.length} campos completados</p>
       <div class="ds-bar"><div class="ds-bar-fill" style="width:${pct}%"></div></div>
     </div>
   </div>`;
+
+  if(missingLabels.length){
+    html+=`<div class="ds-missing">
+      <div class="ds-missing-title">⚠️ Campos pendientes — coméntaselos a tu asesor</div>
+      ${missingLabels.map(l=>`<div class="ds-missing-item">• ${l}</div>`).join('')}
+    </div>`;
+  }
+
   DS_SECS.forEach(sec=>{
-    const vf=sec.f.filter(f=>data[f.k]);
+    const vf=sec.f.filter(f=>data[f.k]&&data[f.k]!=='');
     if(!vf.length)return;
     html+=`<div class="ds-section"><div class="ds-sec-title">📋 ${sec.t}</div><div class="ds-grid">`;
     vf.forEach(f=>{html+=`<div class="ds-field"><label>${f.l}</label><div class="dsv">${data[f.k]}</div></div>`;});
     html+='</div></div>';
   });
+
   if(!filled){
     html+=`<div style="text-align:center;padding:2rem;color:var(--mt);background:var(--w);border-radius:10px;border:1px dashed var(--brd2);font-size:13px">Chatea con tu asesor para que aparezcan tus datos aquí.</div>`;
   }
+
   document.getElementById('ds160-page').innerHTML=html;
 }
 
@@ -599,5 +689,6 @@ document.getElementById('codigo-input').addEventListener('keydown',e=>{if(e.key=
 </script>
 </body>
 </html>
+
 
 
