@@ -32,11 +32,6 @@ nav img{height:36px;width:auto;filter:brightness(0) invert(1)}
 .tab{padding:0 1rem;height:46px;display:flex;align-items:center;font-size:13px;color:rgba(255,255,255,.55);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;gap:6px}
 .tab:hover{color:rgba(255,255,255,.85)}
 .tab.active{color:#fff;border-bottom-color:#fff}
-.abar{background:var(--tdd);padding:.55rem 1.25rem;border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:8px;flex-shrink:0}
-.abar-lbl{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.07em;margin-right:4px}
-.atab{padding:4px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .18s}
-.atab:hover{background:rgba(255,255,255,.1);color:#fff}
-.atab.active{background:#fff;color:var(--tdd);font-weight:500;border-color:#fff}
 .chat-page{flex:1;display:none;flex-direction:column;min-height:0;overflow:hidden}
 .chat-page.active{display:flex}
 .amain{display:flex;flex:1;min-height:0;overflow:hidden}
@@ -102,6 +97,10 @@ nav img{height:36px;width:auto;filter:brightness(0) invert(1)}
 .ds-bar-wrap{flex:1}
 .ds-bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:6px}
 .ds-bar-fill{height:100%;background:var(--teal);border-radius:3px;transition:width .4s}
+.ds-pending{background:var(--gl);border-radius:10px;border:1px solid var(--gold);padding:1rem;margin-bottom:1rem}
+.ds-pending-title{font-size:11px;font-weight:500;color:var(--gold);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.ds-pending-item{font-size:12px;color:var(--mt);padding:3px 0;border-bottom:1px solid rgba(186,117,23,.15)}
+.ds-pending-item:last-child{border:none}
 @media(max-width:580px){.sb{display:none}.ds-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -130,12 +129,6 @@ nav img{height:36px;width:auto;filter:brightness(0) invert(1)}
     <div class="tab active" onclick="showTab('chat')">💬 Mi asesor</div>
     <div class="tab" onclick="showTab('ds160')">📋 Mi DS-160</div>
   </div>
-  <div class="abar" id="abar">
-    <span class="abar-lbl">Tipo de visa</span>
-    <button class="atab active" onclick="swAgent('turista')">✈ Turista B1/B2</button>
-    <button class="atab" onclick="swAgent('tn')">💼 Visa TN</button>
-    <button class="atab" onclick="swAgent('td')">👨‍👩‍👧 Visa TD</button>
-  </div>
   <div class="chat-page active" id="chat-page">
     <div class="amain">
       <div class="sb" id="sb"></div>
@@ -160,6 +153,79 @@ const SUPA_URL='https://mrmphgiqojbzgzcqogui.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ybXBoZ2lxb2piemd6Y3FvZ3VpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MzM5ODUsImV4cCI6MjA5NTAwOTk4NX0.AErFjZkcCw2inqnlvziF_ozfpXJ4o1SLZwonmTzUNQs';
 const {createClient}=supabase;
 const db=createClient(SUPA_URL,SUPA_KEY);
+
+// Campos requeridos para calcular el 100%
+// Solo cuentan cuando el asesor los pregunta explicitamente
+const CAMPOS_REQUERIDOS=[
+  'apellido','nombre','genero','estado_civil','fecha_nac','lugar_nac','estado_nac','pais_nac',
+  'direccion','ciudad','estado_res','cp','telefono','email',
+  'pasaporte_num','pasaporte_tipo','pasaporte_emision','pasaporte_exp',
+  'padre_nombre','padre_fecha_nac','padre_en_usa',
+  'madre_nombre','madre_fecha_nac','madre_en_usa',
+  'familiar_en_usa',
+  'ocupacion','empleador','empleador_dir','empleador_tel','salario','descripcion_trabajo',
+  'motivo_viaje','destino_usa','direccion_usa','fecha_llegada','duracion_estancia','quien_paga',
+  'contacto_usa','contacto_usa_tel','contacto_usa_rel',
+  'ha_viajado_usa','visa_previa','visa_rechazada',
+  'antecedentes','deportado','overstay','fraude_migratorio','org_terrorista','drogas'
+];
+
+const DS_SECS=[
+  {t:'Datos personales',f:[
+    {k:'apellido',l:'Apellido(s)'},{k:'nombre',l:'Nombre(s)'},{k:'otros_nombres',l:'Otros nombres'},
+    {k:'genero',l:'Género'},{k:'estado_civil',l:'Estado civil'},{k:'fecha_nac',l:'Fecha de nacimiento'},
+    {k:'lugar_nac',l:'Ciudad de nacimiento'},{k:'estado_nac',l:'Estado de nacimiento'},
+    {k:'pais_nac',l:'País de nacimiento'},{k:'nacionalidad',l:'Nacionalidad'}
+  ]},
+  {t:'Contacto',f:[
+    {k:'direccion',l:'Dirección'},{k:'ciudad',l:'Ciudad'},{k:'estado_res',l:'Estado'},
+    {k:'cp',l:'Código postal'},{k:'telefono',l:'Teléfono celular'},
+    {k:'telefono_trabajo',l:'Teléfono del trabajo'},{k:'email',l:'Correo electrónico'}
+  ]},
+  {t:'Pasaporte',f:[
+    {k:'pasaporte_num',l:'Número de pasaporte'},{k:'pasaporte_tipo',l:'Tipo de pasaporte'},
+    {k:'pasaporte_emision',l:'Fecha de emisión'},{k:'pasaporte_exp',l:'Fecha de vencimiento'}
+  ]},
+  {t:'Datos familiares',f:[
+    {k:'padre_nombre',l:'Nombre del padre'},{k:'padre_fecha_nac',l:'Fecha de nac. del padre'},
+    {k:'padre_en_usa',l:'¿Padre en EE.UU.?'},
+    {k:'madre_nombre',l:'Nombre de la madre'},{k:'madre_fecha_nac',l:'Fecha de nac. de la madre'},
+    {k:'madre_en_usa',l:'¿Madre en EE.UU.?'},
+    {k:'familiar_en_usa',l:'¿Familiar en EE.UU.?'},{k:'familiar_nombre',l:'Nombre del familiar'},
+    {k:'familiar_relacion',l:'Relación con familiar'},{k:'familiar_estatus',l:'Estatus del familiar'}
+  ]},
+  {t:'Empleo',f:[
+    {k:'ocupacion',l:'Ocupación'},{k:'empleador',l:'Empleador en México'},
+    {k:'empleador_dir',l:'Dirección del empleador'},{k:'empleador_tel',l:'Teléfono del empleador'},
+    {k:'salario',l:'Salario mensual'},{k:'descripcion_trabajo',l:'Descripción de funciones'},
+    {k:'empleador_usa',l:'Empleador en EE.UU.'},{k:'puesto_usa',l:'Puesto en EE.UU.'},
+    {k:'salario_usa',l:'Salario en EE.UU.'},{k:'profesion_tmec',l:'Profesión T-MEC'}
+  ]},
+  {t:'Datos del viaje',f:[
+    {k:'motivo_viaje',l:'Propósito del viaje'},{k:'destino_usa',l:'Destino en EE.UU.'},
+    {k:'direccion_usa',l:'Dirección en EE.UU.'},{k:'fecha_llegada',l:'Fecha estimada de llegada'},
+    {k:'duracion_estancia',l:'Duración de la estancia'},{k:'quien_paga',l:'¿Quién paga el viaje?'},
+    {k:'contacto_usa',l:'Contacto en EE.UU.'},{k:'contacto_usa_tel',l:'Teléfono del contacto'},
+    {k:'contacto_usa_rel',l:'Relación con el contacto'}
+  ]},
+  {t:'Historial de viajes',f:[
+    {k:'ha_viajado_usa',l:'¿Ha visitado EE.UU.?'},{k:'fecha_ultimo_viaje',l:'Último viaje a EE.UU.'},
+    {k:'duracion_ultimo_viaje',l:'Duración del último viaje'},
+    {k:'visa_previa',l:'¿Visa americana previa?'},{k:'visa_previa_num',l:'Número de visa anterior'},
+    {k:'visa_previa_fecha',l:'Fecha de visa anterior'},
+    {k:'visa_rechazada',l:'¿Visa rechazada?'},{k:'visa_rechazada_cuando',l:'¿Cuándo fue rechazada?'},
+    {k:'visa_rechazada_motivo',l:'Motivo del rechazo'}
+  ]},
+  {t:'Antecedentes',f:[
+    {k:'antecedentes',l:'¿Antecedentes penales?'},{k:'deportado',l:'¿Ha sido deportado?'},
+    {k:'overstay',l:'¿Excedió tiempo en EE.UU.?'},{k:'fraude_migratorio',l:'¿Fraude migratorio?'},
+    {k:'org_terrorista',l:'¿Org. terrorista?'},{k:'drogas',l:'¿Drogas?'}
+  ]},
+  {t:'Visa TD — Dependiente',f:[
+    {k:'relacion_titular',l:'Relación con titular TN'},{k:'titular_nombre',l:'Nombre del titular TN'},
+    {k:'titular_visa',l:'Visa TN del titular'}
+  ]}
+];
 
 const AGENTS={
   turista:{
@@ -208,7 +274,7 @@ Habla en español de México.`
   },
   td:{
     name:'Sofía',fullName:'Sofía Ramírez',emoji:'👩',bg:'#EEEDFE',desc:'Tu asesora de visa TD',
-    checklist:['Pasaporte del dependiente','Foto fondo blanco','Acta de nacimiento','Acta de matrimonio','Acta de nacimiento del titular','Copia de visa TN del titular','Carta de empleo del titular','DS-160','Pago MRV fee','Cita conjunta con titular'],
+    checklist:['Pasaporte del dependiente','Foto fondo blanco','Acta de nacimiento','Acta de matrimonio apostillada','Acta de nacimiento del titular','Copia de visa TN del titular','Carta de empleo del titular','DS-160','Pago MRV fee','Cita conjunta con titular'],
     status:['TN del titular verificado','Vínculo familiar documentado','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
     qa:['¿Qué es la visa TD?','¿Qué documentos necesito?','¿Puedo trabajar con TD?','¿La cita es con mi familiar?'],
     connectMsg:'¡Hola! 👋 Espera tantito, te conecto con tu asesora...',
@@ -224,79 +290,50 @@ CONOCIMIENTO EXPERTO: TD aplica SOLO para cónyuge e hijos menores de 21 años. 
 SOLO cuando tengas los 36 campos completos di exactamente: "¡Listo! Ya tengo toda tu información completa 🎉 En breve nos ponemos en contacto contigo para los siguientes pasos. Cualquier duda aquí estoy 😊"
 
 En CADA respuesta incluye al final el JSON actualizado:
-<DS160>{"apellido":"","nombre":"","otros_nombres":"","genero":"","estado_civil":"","fecha_nac":"","lugar_nac":"","estado_nac":"","pais_nac":"","nacionalidad":"Mexico","relacion_titular":"","titular_nombre":"","titular_visa":"","direccion":"","ciudad":"","estado_res":"","cp":"","telefono":"","telefono_trabajo":"","email":"","pasaporte_num":"","pasaporte_tipo":"","pasaporte_emision":"","pasaporte_exp":"","padre_nombre":"","padre_fecha_nac":"","padre_en_usa":"No","madre_nombre":"","madre_fecha_nac":"","madre_en_usa":"No","familiar_en_usa":"No","familiar_nombre":"","familiar_relacion":"","familiar_estatus":"","ocupacion":"","motivo_viaje":"Acompañar titular TN","destino_usa":"","direccion_usa":"","fecha_llegada":"","duracion_estancia":"","quien_paga":"","contacto_usa":"","contacto_usa_tel":"","contacto_usa_rel":"","ha_viajado_usa":"No","fecha_ultimo_viaje":"","visa_previa":"No","visa_previa_num":"","visa_previa_fecha":"","visa_rechazada":"No","visa_rechazada_cuando":"","visa_rechazada_motivo":"","antecedentes":"No","deportado":"No","overstay":"No","fraude_migratorio":"No","org_terrorista":"No","drogas":"No"}</DS160>
+<DS160>{"apellido":"","nombre":"","otros_nombres":"","genero":"","estado_civil":"","fecha_nac":"","lugar_nac":"","estado_nac":"","pais_nac":"","nacionalidad":"Mexico","relacion_titular":"","titular_nombre":"","titular_visa":"","direccion":"","ciudad":"","estado_res":"","cp":"","telefono":"","telefono_trabajo":"","email":"","pasaporte_num":"","pasaporte_tipo":"","pasaporte_emision":"","pasaporte_exp":"","padre_nombre":"","padre_fecha_nac":"","padre_en_usa":"No","madre_nombre":"","madre_fecha_nac":"","madre_en_usa":"No","familiar_en_usa":"No","familiar_nombre":"","familiar_relacion":"","familiar_estatus":"","ocupacion":"","motivo_viaje":"Acompanar titular TN","destino_usa":"","direccion_usa":"","fecha_llegada":"","duracion_estancia":"","quien_paga":"","contacto_usa":"","contacto_usa_tel":"","contacto_usa_rel":"","ha_viajado_usa":"No","fecha_ultimo_viaje":"","visa_previa":"No","visa_previa_num":"","visa_previa_fecha":"","visa_rechazada":"No","visa_rechazada_cuando":"","visa_rechazada_motivo":"","antecedentes":"No","deportado":"No","overstay":"No","fraude_migratorio":"No","org_terrorista":"No","drogas":"No"}</DS160>
 
 Habla en español de México.`
   }
 };
 
-const DS_SECS=[
-  {t:'Datos personales',f:[{k:'apellido',l:'Apellido(s)'},{k:'nombre',l:'Nombre(s)'},{k:'fecha_nac',l:'Fecha de nacimiento'},{k:'lugar_nac',l:'Lugar de nacimiento'},{k:'nacionalidad',l:'Nacionalidad'},{k:'estado_civil',l:'Estado civil'}]},
-  {t:'Contacto',f:[{k:'direccion',l:'Dirección'},{k:'telefono',l:'Teléfono'},{k:'email',l:'Correo electrónico'}]},
-  {t:'Pasaporte',f:[{k:'pasaporte_num',l:'Número de pasaporte'},{k:'pasaporte_exp',l:'Fecha de vencimiento'}]},
-  {t:'Empleo',f:[{k:'ocupacion',l:'Ocupación'},{k:'empleador',l:'Empleador en México'},{k:'salario',l:'Salario mensual'},{k:'empleador_usa',l:'Empleador en EE.UU.'},{k:'puesto_usa',l:'Puesto en EE.UU.'},{k:'salario_usa',l:'Salario en EE.UU.'},{k:'profesion_tmec',l:'Profesión T-MEC'}]},
-  {t:'Viaje',f:[{k:'motivo_viaje',l:'Propósito del viaje'},{k:'destino_usa',l:'Destino en EE.UU.'},{k:'duracion_estancia',l:'Duración de estancia'},{k:'contacto_usa',l:'Contacto en EE.UU.'}]},
-  {t:'Historial migratorio',f:[{k:'ha_viajado_usa',l:'Ha visitado EE.UU.'},{k:'visa_previa',l:'Visa americana previa'},{k:'visa_rechazada',l:'Visa rechazada antes'},{k:'antecedentes',l:'Antecedentes penales'},{k:'relacion_titular',l:'Relación con titular TN'},{k:'titular_nombre',l:'Nombre titular TN'},{k:'titular_visa',l:'Visa TN del titular'}]}
-];
+let caseId=null,caseVisa='turista',messages=[],dsData={},loading=false,isFirstMessage=true,currentAgent='turista',currentCodigo='';
 
-// ── STATE ─────────────────────────────────────────────────────────
-let caseId=null;
-let caseVisa='turista';
-let messages=[];  // single array for current case
-let dsData={};
-let loading=false;
-let isFirstMessage=true;
-let currentAgent='turista';
-
-// ── SUPABASE ──────────────────────────────────────────────────────
 async function saveToSupabase(){
   if(!caseId)return;
   try{
-    const filled=Object.values(dsData).filter(v=>v&&v!=='').length;
-    const pct=Math.min(100,Math.round((filled/20)*100));
+    const filled=CAMPOS_REQUERIDOS.filter(k=>dsData[k]&&dsData[k]!==''&&dsData[k]!=='No').length;
+    const pct=Math.min(100,Math.round((filled/CAMPOS_REQUERIDOS.length)*100));
     const {data:caso}=await db.from('casos').update({
-      historial:messages,
-      ds160:dsData,
-      ds160_pct:pct
+      historial:messages,ds160:dsData,ds160_pct:pct
     }).eq('id',caseId).select().single();
     flashSaved();
     if(pct>=100&&caso&&!caso.notificado){
       await db.from('casos').update({notificado:true}).eq('id',caseId);
       await fetch('/api/notify',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
+        method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-          clienteNombre:caso.nombre||'Cliente',
-          visa:caseVisa,
-          codigo:caso.codigo_cliente||''
+          clienteNombre:(dsData.nombre&&dsData.apellido)?dsData.nombre+' '+dsData.apellido:caso.nombre||'Cliente',
+          visa:caseVisa,codigo:currentCodigo
         })
       });
-      messages.push({
-        role:'assistant',
-        content:'🎉 ¡Tu DS-160 está completo! En breve nos ponemos en contacto contigo para los siguientes pasos.',
-        time:getTime()
-      });
+      messages.push({role:'assistant',content:'🎉 ¡Tu DS-160 está completo! En breve nos ponemos en contacto contigo para los siguientes pasos.',time:getTime()});
       rmsgs();
     }
   }catch(e){console.error('Save error:',e);}
 }
-
 
 function flashSaved(){
   const sv=document.getElementById('svi');
   if(sv){sv.classList.add('on');setTimeout(()=>sv.classList.remove('on'),2000);}
 }
 
-// ── LOGIN ─────────────────────────────────────────────────────────
 async function login(){
   const codigo=document.getElementById('codigo-input').value.trim().toUpperCase();
   if(!codigo){showError('Ingresa tu código.');return;}
   try{
     const {data,error}=await db.from('casos').select('*').eq('codigo_cliente',codigo).single();
     if(error||!data){showError('Código no válido. Verifica con tu gestor.');return;}
-    caseId=data.id;
-    caseVisa=data.visa||'turista';
-    currentAgent=caseVisa;
+    caseId=data.id;caseVisa=data.visa||'turista';currentAgent=caseVisa;currentCodigo=codigo;
     messages=Array.isArray(data.historial)?data.historial:[];
     dsData=data.ds160&&typeof data.ds160==='object'?data.ds160:{};
     isFirstMessage=messages.length===0;
@@ -309,38 +346,31 @@ async function login(){
   }catch(e){showError('Error de conexión. Intenta de nuevo.');}
 }
 
-function showError(msg){
-  const el=document.getElementById('login-error');
-  el.textContent=msg;el.style.display='block';
-}
+function showError(msg){const el=document.getElementById('login-error');el.textContent=msg;el.style.display='block';}
 
 function logout(){
-  caseId=null;messages=[];dsData={};isFirstMessage=true;
+  caseId=null;messages=[];dsData={};isFirstMessage=true;currentCodigo='';
   document.getElementById('login-wrap').style.display='flex';
   document.getElementById('app-wrap').classList.remove('active');
   document.getElementById('nav-user').style.display='none';
   document.getElementById('codigo-input').value='';
 }
 
-// ── TABS ──────────────────────────────────────────────────────────
 function showTab(t){
   document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['chat','ds160'][i]===t));
   document.getElementById('chat-page').classList.toggle('active',t==='chat');
   document.getElementById('ds160-page').classList.toggle('active',t==='ds160');
-  document.getElementById('abar').style.display='none';
   if(t==='ds160')renderDS160();
 }
 
-// ── AGENT ─────────────────────────────────────────────────────────
 function swAgent(a){
   currentAgent=a;
-  document.querySelectorAll('.atab').forEach((t,i)=>t.classList.toggle('active',['turista','tn','td'][i]===a));
   rsb();rchdr();rqa();
   if(a===caseVisa){
     rmsgs();
     document.getElementById('inp').disabled=false;
     document.querySelector('.sndbtn').disabled=false;
-  } else {
+  }else{
     document.getElementById('msgs').innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:var(--ht)">
       <div style="font-size:30px;margin-bottom:8px">🔒</div>
       <p style="font-size:13px;font-weight:500;color:var(--tx);margin-bottom:4px">Asesor no disponible</p>
@@ -351,13 +381,11 @@ function swAgent(a){
   }
 }
 
-
 function rchdr(){
   const a=AGENTS[currentAgent];
   document.getElementById('chdr').innerHTML=`
     <div class="aav" style="background:${a.bg}">${a.emoji}</div>
-    <div class="chi">
-      <p>${a.fullName}</p>
+    <div class="chi"><p>${a.fullName}</p>
       <small><span style="width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block"></span> En línea · ${a.desc}</small>
     </div>
     <span class="svi" id="svi">☁ Guardado</span>`;
@@ -392,14 +420,9 @@ function rmsgs(){
     const time=msg.time||'';
     if(msg.role==='assistant'){
       const a=AGENTS[currentAgent];
-      return `<div class="msg ag">
-        <div class="mav" style="background:${a.bg}">${a.emoji}</div>
-        <div><div class="mb">${fmt(clean)}</div><div class="msg-time">${time}</div></div>
-      </div>`;
+      return `<div class="msg ag"><div class="mav" style="background:${a.bg}">${a.emoji}</div><div><div class="mb">${fmt(clean)}</div><div class="msg-time">${time}</div></div></div>`;
     }
-    return `<div class="msg us">
-      <div><div class="mb">${clean}</div><div class="msg-time">${time}</div></div>
-    </div>`;
+    return `<div class="msg us"><div><div class="mb">${clean}</div><div class="msg-time">${time}</div></div></div>`;
   }).join('');
   c.scrollTop=c.scrollHeight;
 }
@@ -410,98 +433,59 @@ function rqa(){
 }
 
 function showTypingIndicator(){
-  const id='typing-'+Date.now();
-  const a=AGENTS[currentAgent];
-  const d=document.createElement('div');
-  d.className='typing-wrap';d.id=id;
-  d.innerHTML=`<div class="mav" style="background:${a.bg}">${a.emoji}</div>
-    <div class="typing-bubble"><span></span><span></span><span></span></div>`;
-  const c=document.getElementById('msgs');
-  c.appendChild(d);c.scrollTop=c.scrollHeight;
+  const id='typing-'+Date.now(),a=AGENTS[currentAgent];
+  const d=document.createElement('div');d.className='typing-wrap';d.id=id;
+  d.innerHTML=`<div class="mav" style="background:${a.bg}">${a.emoji}</div><div class="typing-bubble"><span></span><span></span><span></span></div>`;
+  const c=document.getElementById('msgs');c.appendChild(d);c.scrollTop=c.scrollHeight;
   return id;
 }
 
 function showSysMsg(text){
-  const d=document.createElement('div');
-  d.className='sys-msg';d.textContent=text;
-  const c=document.getElementById('msgs');
-  c.appendChild(d);c.scrollTop=c.scrollHeight;
+  const d=document.createElement('div');d.className='sys-msg';d.textContent=text;
+  document.getElementById('msgs').appendChild(d);
+  document.getElementById('msgs').scrollTop=document.getElementById('msgs').scrollHeight;
 }
 
 function parseDS(text){
   const m=text.match(/<DS160>([\s\S]*?)<\/DS160>/);
   if(!m)return;
-  try{
-    const p=JSON.parse(m[1]);
-    Object.entries(p).forEach(([k,v])=>{if(v&&v!=='')dsData[k]=v;});
-  }catch(e){}
+  try{const p=JSON.parse(m[1]);Object.entries(p).forEach(([k,v])=>{if(v&&v!=='')dsData[k]=v;});}catch(e){}
 }
 
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-
 async function sendQ(t){document.getElementById('inp').value=t;await snd();}
 
 async function snd(){
   const inp=document.getElementById('inp');
   const text=inp.value.trim();
   if(!text||loading)return;
-
   inp.value='';inp.style.height='auto';
   loading=true;
-
-  // Add user message
-  const userMsg={role:'user',content:text,time:getTime()};
-  messages.push(userMsg);
+  messages.push({role:'user',content:text,time:getTime()});
   rmsgs();
-
-  // Save immediately after user message
   await saveToSupabase();
-
-  // First message — show connect message
-  if(isFirstMessage){
-    isFirstMessage=false;
-    showSysMsg(AGENTS[currentAgent].connectMsg);
-  }
-
-  // Human delay: 8-18 seconds
-  const delay=8000+Math.random()*10000;
+  if(isFirstMessage){isFirstMessage=false;showSysMsg(AGENTS[currentAgent].connectMsg);}
   const tid=showTypingIndicator();
-  await sleep(delay);
-
+  await sleep(8000+Math.random()*10000);
   try{
     const r=await fetch('/api/chat',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        system:AGENTS[currentAgent].prompt,
-        messages:messages.map(m=>({role:m.role,content:m.content}))
-      })
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system:AGENTS[currentAgent].prompt,messages:messages.map(m=>({role:m.role,content:m.content}))})
     });
     const data=await r.json();
     if(!r.ok)throw new Error(data.error||'Error');
     const reply=data.text||'Sin respuesta.';
-
     document.getElementById(tid)?.remove();
-
-    // Parse DS160 data from reply
     parseDS(reply);
-
-    // Add assistant message
-    const assistantMsg={role:'assistant',content:reply,time:getTime()};
-    messages.push(assistantMsg);
+    messages.push({role:'assistant',content:reply,time:getTime()});
     rmsgs();
-
-    // Save after assistant response
     await saveToSupabase();
-
   }catch(e){
     document.getElementById(tid)?.remove();
-    const errMsg={role:'assistant',content:'Perdona, tuve un problemita 😅 ¿Me repites?',time:getTime()};
-    messages.push(errMsg);
+    messages.push({role:'assistant',content:'Perdona, tuve un problemita 😅 ¿Me repites?',time:getTime()});
     rmsgs();
     await saveToSupabase();
   }
-
   loading=false;
 }
 
@@ -510,23 +494,38 @@ function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,
 
 function renderDS160(){
   const data=dsData||{};
-  const filled=Object.values(data).filter(v=>v&&v!=='').length;
-  const pct=Math.min(100,Math.round((filled/20)*100));
+  const filled=CAMPOS_REQUERIDOS.filter(k=>data[k]&&data[k]!==''&&data[k]!=='No').length;
+  const pct=Math.min(100,Math.round((filled/CAMPOS_REQUERIDOS.length)*100));
+  const missing=CAMPOS_REQUERIDOS.filter(k=>!data[k]||data[k]===''||data[k]==='No');
+  const missingLabels=missing.map(k=>{
+    for(const sec of DS_SECS){const f=sec.f.find(f=>f.k===k);if(f)return f.l;}
+    return k;
+  });
+
   let html=`<div class="ds-progress">
     <div class="ds-pct">${pct}%</div>
     <div class="ds-bar-wrap">
       <p style="font-size:13px;font-weight:500">Tu formulario DS-160</p>
-      <p style="font-size:12px;color:var(--mt);margin-top:2px">${filled} campos completados</p>
+      <p style="font-size:12px;color:var(--mt);margin-top:2px">${filled} de ${CAMPOS_REQUERIDOS.length} campos completados</p>
       <div class="ds-bar"><div class="ds-bar-fill" style="width:${pct}%"></div></div>
     </div>
   </div>`;
+
+  if(missingLabels.length){
+    html+=`<div class="ds-pending">
+      <div class="ds-pending-title">⚠️ Campos pendientes — coméntaselos a tu asesor</div>
+      ${missingLabels.map(l=>`<div class="ds-pending-item">• ${l}</div>`).join('')}
+    </div>`;
+  }
+
   DS_SECS.forEach(sec=>{
-    const vf=sec.f.filter(f=>data[f.k]);
+    const vf=sec.f.filter(f=>data[f.k]&&data[f.k]!=='');
     if(!vf.length)return;
     html+=`<div class="ds-section"><div class="ds-sec-title">📋 ${sec.t}</div><div class="ds-grid">`;
     vf.forEach(f=>{html+=`<div class="ds-field"><label>${f.l}</label><div class="dsv">${data[f.k]}</div></div>`;});
     html+='</div></div>';
   });
+
   if(!filled){
     html+=`<div style="text-align:center;padding:2rem;color:var(--mt);background:var(--w);border-radius:10px;border:1px dashed var(--brd2);font-size:13px">Chatea con tu asesor para que aparezcan tus datos aquí.</div>`;
   }
