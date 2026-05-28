@@ -381,6 +381,7 @@ async function login(){
     document.getElementById('nav-user').style.display='flex';
     document.getElementById('nav-codigo').textContent=codigo;
     swAgent(caseVisa);
+if(messages.length>0)rmsgs();
   }catch(e){showError('Error de conexión. Intenta de nuevo.');}
 }
 
