@@ -342,7 +342,8 @@ async function login(){
     document.getElementById('app-wrap').classList.add('active');
     document.getElementById('nav-user').style.display='flex';
     document.getElementById('nav-codigo').textContent=codigo;
-    swAgent(caseVisa);
+    currentAgent=caseVisa;
+swAgent(caseVisa);
   }catch(e){showError('Error de conexión. Intenta de nuevo.');}
 }
 
