@@ -400,6 +400,7 @@ function showTab(t){
   document.getElementById('chat-page').classList.toggle('active',t==='chat');
   document.getElementById('ds160-page').classList.toggle('active',t==='ds160');
   document.getElementById('abar').style.display='none';
+  if(t==='chat')swAgent(caseVisa);
   if(t==='ds160')renderDS160();
 }
 
