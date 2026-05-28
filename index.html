@@ -8,845 +8,556 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --teal:#1D9E75;--td:#0F6E56;--tdd:#085041;--tl:#E1F5EE;
-  --gold:#BA7517;--gl:#FAEEDA;
-  --bg:#f4f3ef;--w:#fff;--brd:#e2e0da;--brd2:#cbc8bf;
-  --tx:#1a1a18;--mt:#6b6a66;--ht:#a8a6a0;
-}
+:root{--teal:#1D9E75;--td:#0F6E56;--tdd:#085041;--tl:#E1F5EE;--gold:#BA7517;--gl:#FAEEDA;--bg:#f4f3ef;--w:#fff;--brd:#e2e0da;--brd2:#cbc8bf;--tx:#1a1a18;--mt:#6b6a66;--ht:#a8a6a0;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;display:flex;flex-direction:column;font-size:14px}
 nav{background:var(--tdd);padding:.7rem 1.25rem;display:flex;align-items:center;gap:12px;flex-shrink:0}
 nav img{height:36px;width:auto;filter:brightness(0) invert(1)}
-.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-.nav-code{font-size:12px;color:rgba(255,255,255,.7)}
-.nav-code span{color:#fff;font-weight:500}
-.btn-salir{padding:4px 10px;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:transparent;color:rgba(255,255,255,.7);font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer}
-.btn-salir:hover{background:rgba(255,255,255,.1);color:#fff}
-
-/* LOGIN */
+.nav-user{margin-left:auto;font-size:12px;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:8px}
+.nav-user span{color:#fff;font-weight:500}
+.logout-btn{padding:4px 10px;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:transparent;color:rgba(255,255,255,.7);font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer}
+.logout-btn:hover{background:rgba(255,255,255,.1);color:#fff}
 .login-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem}
-.login-card{background:var(--w);border-radius:16px;border:1px solid var(--brd);padding:2rem;width:100%;max-width:360px;text-align:center}
-.login-card img{height:60px;width:auto;margin-bottom:1.5rem}
+.login-card{background:var(--w);border-radius:16px;border:1px solid var(--brd);padding:2rem;width:100%;max-width:380px;text-align:center}
+.login-card img{height:55px;width:auto;margin-bottom:1.25rem}
 .login-card h2{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:6px}
 .login-card p{font-size:13px;color:var(--mt);margin-bottom:1.5rem;line-height:1.5}
-.code-input{width:100%;padding:12px;border:1.5px solid var(--brd);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--tx);outline:none;text-align:center;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;transition:border-color .2s}
-.code-input:focus{border-color:var(--teal)}
-.btn-entrar{width:100%;padding:12px;background:var(--tdd);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:background .15s}
-.btn-entrar:hover{background:var(--td)}
-.login-err{font-size:12px;color:#E24B4A;margin-top:8px;display:none}
-
-/* APP */
-.app{flex:1;display:none;flex-direction:column;min-height:0;overflow:hidden}
-.app.on{display:flex}
-.tabs{background:var(--tdd);display:flex;padding:0 1.25rem;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
-.tab{padding:0 1rem;height:44px;display:flex;align-items:center;font-size:13px;color:rgba(255,255,255,.55);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.login-input{width:100%;padding:11px 14px;border:1px solid var(--brd);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--tx);outline:none;text-align:center;letter-spacing:.1em;text-transform:uppercase;transition:border-color .2s;margin-bottom:10px}
+.login-input:focus{border-color:var(--teal)}
+.login-btn{width:100%;padding:12px;background:var(--tdd);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:background .15s}
+.login-btn:hover{background:var(--td)}
+.login-error{font-size:12px;color:#E24B4A;margin-top:8px;display:none}
+.app-wrap{flex:1;display:none;flex-direction:column;min-height:0;overflow:hidden}
+.app-wrap.active{display:flex}
+.tabs{background:var(--tdd);display:flex;padding:0 1.25rem;border-top:1px solid rgba(255,255,255,.06)}
+.tab{padding:0 1rem;height:46px;display:flex;align-items:center;font-size:13px;color:rgba(255,255,255,.55);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;gap:6px}
 .tab:hover{color:rgba(255,255,255,.85)}
-.tab.on{color:#fff;border-bottom-color:#fff}
-
-/* CHAT */
-.chat-view{flex:1;display:none;flex-direction:column;min-height:0;overflow:hidden}
-.chat-view.on{display:flex}
-.chat-main{display:flex;flex:1;min-height:0;overflow:hidden}
-.sidebar{width:210px;background:var(--w);border-right:1px solid var(--brd);overflow-y:auto;flex-shrink:0}
-.sb-sec{padding:.8rem 1rem;border-bottom:1px solid var(--brd)}
-.sb-lbl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--ht);margin-bottom:8px}
-.step{display:flex;align-items:center;gap:7px;padding:4px 0;font-size:12px;color:var(--mt)}
-.step-dot{width:7px;height:7px;border-radius:50%;background:var(--brd2);flex-shrink:0}
-.step.cur{color:var(--tx);font-weight:500}
-.step.cur .step-dot{background:var(--gold)}
-.step.done .step-dot{background:var(--teal)}
-.doc{display:flex;align-items:flex-start;gap:7px;padding:5px 0;font-size:12px;border-bottom:1px solid var(--brd)}
-.doc:last-child{border:none}
-.doc-box{width:14px;height:14px;border:1.5px solid var(--brd2);border-radius:3px;flex-shrink:0;margin-top:1px}
-
-/* CHAT COL */
-.chat-col{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
-.chat-hdr{padding:.8rem 1.25rem;background:var(--w);border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px}
-.agent-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:2px solid var(--brd)}
-.agent-info p{font-size:13px;font-weight:500}
-.agent-info small{font-size:11px;color:var(--mt);display:flex;align-items:center;gap:4px}
-.saved-ind{margin-left:auto;font-size:11px;color:var(--teal);opacity:0;transition:opacity .3s}
-.saved-ind.on{opacity:1}
-.messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:10px}
-.msg{display:flex;gap:8px;max-width:86%;animation:fadeUp .2s ease}
-@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-.msg.agent{align-self:flex-start}
-.msg.user{align-self:flex-end;flex-direction:row-reverse}
-.msg-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px;border:1.5px solid var(--brd)}
-.bubble{padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.6}
-.msg.agent .bubble{background:var(--w);border:1px solid var(--brd);border-radius:3px 14px 14px 14px}
-.msg.user .bubble{background:var(--tdd);color:#fff;border-radius:14px 3px 14px 14px}
-.bubble ul{padding-left:1rem;margin-top:3px}
-.bubble li{margin-bottom:2px}
+.tab.active{color:#fff;border-bottom-color:#fff}
+.abar{background:var(--tdd);padding:.55rem 1.25rem;border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.abar-lbl{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.07em;margin-right:4px}
+.atab{padding:4px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .18s}
+.atab:hover{background:rgba(255,255,255,.1);color:#fff}
+.atab.active{background:#fff;color:var(--tdd);font-weight:500;border-color:#fff}
+.chat-page{flex:1;display:none;flex-direction:column;min-height:0;overflow:hidden}
+.chat-page.active{display:flex}
+.amain{display:flex;flex:1;min-height:0;overflow:hidden}
+.sb{width:220px;background:var(--w);border-right:1px solid var(--brd);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.sbs{padding:.8rem 1rem;border-bottom:1px solid var(--brd)}
+.sbl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--ht);margin-bottom:8px}
+.sst{display:flex;align-items:center;gap:7px;padding:4px 0;font-size:12px;color:var(--mt)}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--brd2);flex-shrink:0}
+.sst.done .sdot{background:var(--teal)}
+.sst.cur{color:var(--tx);font-weight:500}
+.sst.cur .sdot{background:var(--gold)}
+.cli{display:flex;align-items:flex-start;gap:7px;padding:5px 0;font-size:12px;border-bottom:1px solid var(--brd)}
+.cli:last-child{border:none}
+.clb{width:14px;height:14px;border:1.5px solid var(--brd2);border-radius:3px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center}
+.cli.done .clb{background:var(--teal);border-color:var(--teal)}
+.cli.done .clb::after{content:'✓';color:#fff;font-size:9px}
+.cli.done span{color:var(--ht);text-decoration:line-through}
+.ccol{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.chdr{padding:.75rem 1.25rem;background:var(--w);border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px}
+.aav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:2px solid var(--brd)}
+.chi p{font-size:13px;font-weight:500}
+.chi small{font-size:11px;color:var(--mt);display:flex;align-items:center;gap:4px}
+.svi{margin-left:auto;font-size:11px;color:var(--teal);opacity:0;transition:opacity .3s}
+.svi.on{opacity:1}
+.msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:10px}
+.msg{display:flex;gap:8px;max-width:88%;animation:mIn .25s ease}
+@keyframes mIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.msg.ag{align-self:flex-start}
+.msg.us{align-self:flex-end;flex-direction:row-reverse}
+.mav{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:2px;border:1.5px solid var(--brd)}
+.mb{padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.6}
+.msg.ag .mb{background:var(--w);border:1px solid var(--brd);border-radius:3px 14px 14px 14px}
+.msg.us .mb{background:var(--tdd);color:#fff;border-radius:14px 3px 14px 14px}
+.mb ul{padding-left:1.1rem;margin-top:3px}
+.mb li{margin-bottom:2px}
 .msg-time{font-size:10px;color:var(--ht);margin-top:3px;padding:0 4px}
-.msg.user .msg-time{text-align:right}
-.typing-row{display:flex;gap:8px;align-self:flex-start;animation:fadeUp .2s ease}
-.typing-bub{padding:12px 16px;border-radius:3px 14px 14px 14px;background:var(--w);border:1px solid var(--brd);display:flex;gap:4px;align-items:center}
-.typing-bub span{width:6px;height:6px;border-radius:50%;background:var(--ht);animation:bounce 1.3s infinite}
-.typing-bub span:nth-child(2){animation-delay:.2s}
-.typing-bub span:nth-child(3){animation-delay:.4s}
-@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
-.sys-note{text-align:center;font-size:11px;color:var(--ht);padding:3px 0}
-.quick-btns{padding:.5rem 1rem;display:flex;gap:5px;flex-wrap:wrap;border-top:1px solid var(--brd);background:var(--bg)}
-.qbtn{padding:5px 12px;border:1px solid var(--brd2);border-radius:14px;background:var(--w);font-family:'DM Sans',sans-serif;font-size:11px;color:var(--mt);cursor:pointer;transition:all .15s;white-space:nowrap}
-.qbtn:hover{border-color:var(--teal);color:var(--td);background:var(--tl)}
-.input-row{padding:.75rem 1rem;background:var(--w);border-top:1px solid var(--brd);display:flex;gap:7px;align-items:flex-end}
-.input-row textarea{flex:1;padding:9px 13px;border:1px solid var(--brd);border-radius:20px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);resize:none;outline:none;max-height:100px;line-height:1.5;transition:border-color .2s;background:var(--bg)}
-.input-row textarea:focus{border-color:var(--teal);background:var(--w)}
-.send-btn{width:38px;height:38px;border-radius:50%;background:var(--tdd);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
-.send-btn:hover{background:var(--teal)}
-.send-btn svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-
-/* DS-160 VIEW */
-.ds-view{flex:1;display:none;overflow-y:auto;padding:1.25rem}
-.ds-view.on{display:block}
-.ds-card{background:var(--w);border-radius:10px;border:1px solid var(--brd);padding:1rem;margin-bottom:1rem}
-.ds-card-title{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--ht);margin-bottom:10px}
-.ds-fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px}
+.msg.us .msg-time{text-align:right}
+.typing-wrap{display:flex;gap:8px;max-width:88%;align-self:flex-start;animation:mIn .2s ease}
+.typing-bubble{padding:12px 16px;border-radius:3px 14px 14px 14px;background:var(--w);border:1px solid var(--brd);display:flex;gap:4px;align-items:center}
+.typing-bubble span{width:6px;height:6px;border-radius:50%;background:var(--ht);animation:tda 1.4s infinite}
+.typing-bubble span:nth-child(2){animation-delay:.2s}
+.typing-bubble span:nth-child(3){animation-delay:.4s}
+@keyframes tda{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+.sys-msg{text-align:center;font-size:11px;color:var(--ht);padding:4px 0;margin:4px 0}
+.qabar{padding:.5rem 1rem;display:flex;gap:5px;flex-wrap:wrap;border-top:1px solid var(--brd);background:var(--bg)}
+.qa{padding:5px 12px;border:1px solid var(--brd2);border-radius:14px;background:var(--w);font-family:'DM Sans',sans-serif;font-size:11px;color:var(--mt);cursor:pointer;transition:all .15s;white-space:nowrap}
+.qa:hover{border-color:var(--teal);color:var(--td);background:var(--tl)}
+.inprow{padding:.75rem 1rem;background:var(--w);border-top:1px solid var(--brd);display:flex;gap:7px;align-items:flex-end}
+.inprow textarea{flex:1;padding:9px 13px;border:1px solid var(--brd);border-radius:20px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);resize:none;outline:none;max-height:110px;line-height:1.5;transition:border-color .2s;background:var(--bg)}
+.inprow textarea:focus{border-color:var(--teal);background:var(--w)}
+.sndbtn{width:38px;height:38px;border-radius:50%;background:var(--tdd);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.sndbtn:hover{background:var(--teal)}
+.sndbtn svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ds-page{flex:1;display:none;overflow-y:auto;padding:1.25rem}
+.ds-page.active{display:block}
+.ds-section{background:var(--w);border-radius:10px;border:1px solid var(--brd);padding:1rem;margin-bottom:1rem}
+.ds-sec-title{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--ht);margin-bottom:10px}
+.ds-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
 .ds-field label{font-size:11px;color:var(--mt);display:block;margin-bottom:3px}
-.ds-val{font-size:13px;font-weight:500;padding:7px 10px;background:var(--bg);border-radius:6px;border:1px solid var(--brd);min-height:32px;line-height:1.4}
-.ds-progress-card{background:var(--w);border-radius:10px;border:1px solid var(--brd);padding:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:14px}
-.ds-pct-num{font-size:32px;font-weight:500;color:var(--teal);flex-shrink:0;line-height:1}
+.dsv{font-size:13px;font-weight:500;padding:7px 10px;background:var(--bg);border-radius:6px;border:1px solid var(--brd);min-height:32px;line-height:1.4}
+.ds-progress{background:var(--w);border-radius:10px;border:1px solid var(--brd);padding:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:12px}
+.ds-pct{font-size:28px;font-weight:500;color:var(--teal);flex-shrink:0}
 .ds-bar-wrap{flex:1}
-.ds-bar-wrap p{font-size:13px;font-weight:500;margin-bottom:2px}
-.ds-bar-wrap small{font-size:11px;color:var(--mt)}
 .ds-bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:6px}
-.ds-bar-fill{height:100%;background:var(--teal);border-radius:3px;transition:width .5s}
-.ds-pending{background:#FAEEDA;border-radius:10px;border:1px solid #BA7517;padding:1rem;margin-bottom:1rem}
-.ds-pending-title{font-size:11px;font-weight:500;color:#BA7517;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
-.ds-pending-item{font-size:12px;color:var(--mt);padding:3px 0;border-bottom:1px solid rgba(186,117,23,.15)}
-.ds-pending-item:last-child{border:none}
-
-@media(max-width:560px){.sidebar{display:none}.ds-fields{grid-template-columns:1fr}}
+.ds-bar-fill{height:100%;background:var(--teal);border-radius:3px;transition:width .4s}
+@media(max-width:580px){.sb{display:none}.ds-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-
-<!-- NAV -->
 <nav>
   <img src="/public/logo.png" alt="Vía Global">
-  <div class="nav-right" id="nav-right" style="display:none">
-    <div class="nav-code">Código: <span id="nav-code-val"></span></div>
-    <button class="btn-salir" onclick="logout()">Salir</button>
+  <div class="nav-user" id="nav-user" style="display:none">
+    <span id="nav-codigo"></span>
+    <button class="logout-btn" onclick="logout()">Salir</button>
   </div>
 </nav>
 
-<!-- LOGIN -->
 <div class="login-wrap" id="login-wrap">
   <div class="login-card">
     <img src="/public/logo.png" alt="Vía Global">
     <h2>Bienvenido</h2>
-    <p>Ingresa tu código para conectarte con tu asesor de visa.</p>
-    <input class="code-input" id="code-inp" type="text" placeholder="VG-2024-001" maxlength="20"
-      oninput="this.value=this.value.toUpperCase()"
-      onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="btn-entrar" onclick="doLogin()">Acceder</button>
-    <div class="login-err" id="login-err">Código no válido. Verifica con tu gestor.</div>
+    <p>Ingresa tu código de cliente para conectarte con tu asesor.</p>
+    <input class="login-input" id="codigo-input" type="text" placeholder="VG-2024-001" maxlength="20" oninput="this.value=this.value.toUpperCase()">
+    <button class="login-btn" onclick="login()">Acceder</button>
+    <div class="login-error" id="login-error">Código no válido. Verifica con tu gestor.</div>
   </div>
 </div>
 
-<!-- APP -->
-<div class="app" id="app">
+<div class="app-wrap" id="app-wrap">
   <div class="tabs">
-    <div class="tab on" onclick="showTab('chat')">💬 Mi asesor</div>
+    <div class="tab active" onclick="showTab('chat')">💬 Mi asesor</div>
     <div class="tab" onclick="showTab('ds160')">📋 Mi DS-160</div>
   </div>
-
-  <!-- CHAT VIEW -->
-  <div class="chat-view on" id="chat-view">
-    <div class="chat-main">
-      <div class="sidebar" id="sidebar"></div>
-      <div class="chat-col">
-        <div class="chat-hdr" id="chat-hdr"></div>
-        <div class="messages" id="messages"></div>
-        <div class="quick-btns" id="quick-btns"></div>
-        <div class="input-row">
-          <textarea id="msg-inp" rows="1" placeholder="Escribe tu mensaje..."
-            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();doSend()}"
-            oninput="autoResize(this)"></textarea>
-          <button class="send-btn" onclick="doSend()">
+  <div class="abar" id="abar">
+    <span class="abar-lbl">Tipo de visa</span>
+    <button class="atab active" onclick="swAgent('turista')">✈ Turista B1/B2</button>
+    <button class="atab" onclick="swAgent('tn')">💼 Visa TN</button>
+    <button class="atab" onclick="swAgent('td')">👨‍👩‍👧 Visa TD</button>
+  </div>
+  <div class="chat-page active" id="chat-page">
+    <div class="amain">
+      <div class="sb" id="sb"></div>
+      <div class="ccol">
+        <div class="chdr" id="chdr"></div>
+        <div class="msgs" id="msgs"></div>
+        <div class="qabar" id="qabar"></div>
+        <div class="inprow">
+          <textarea id="inp" rows="1" placeholder="Escribe tu mensaje..." onkeydown="hk(event)" oninput="ar(this)"></textarea>
+          <button class="sndbtn" onclick="snd()">
             <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- DS-160 VIEW -->
-  <div class="ds-view" id="ds-view"></div>
+  <div class="ds-page" id="ds160-page"></div>
 </div>
 
 <script>
-// ─── CONFIG ───────────────────────────────────────────────────────
-const SUPA_URL = 'https://mrmphgiqojbzgzcqogui.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ybXBoZ2lxb2piemd6Y3FvZ3VpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MzM5ODUsImV4cCI6MjA5NTAwOTk4NX0.AErFjZkcCw2inqnlvziF_ozfpXJ4o1SLZwonmTzUNQs';
-const { createClient } = supabase;
-const db = createClient(SUPA_URL, SUPA_KEY);
+const SUPA_URL='https://mrmphgiqojbzgzcqogui.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ybXBoZ2lxb2piemd6Y3FvZ3VpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MzM5ODUsImV4cCI6MjA5NTAwOTk4NX0.AErFjZkcCw2inqnlvziF_ozfpXJ4o1SLZwonmTzUNQs';
+const {createClient}=supabase;
+const db=createClient(SUPA_URL,SUPA_KEY);
 
-// ─── DS-160 DEFINICIÓN ────────────────────────────────────────────
-const DS_SECTIONS = [
-  { title: 'Datos personales', fields: [
-    { k: 'apellido', l: 'Apellido(s)' },
-    { k: 'nombre', l: 'Nombre(s)' },
-    { k: 'otros_nombres', l: 'Otros nombres o alias' },
-    { k: 'genero', l: 'Género' },
-    { k: 'estado_civil', l: 'Estado civil' },
-    { k: 'fecha_nac', l: 'Fecha de nacimiento' },
-    { k: 'lugar_nac', l: 'Ciudad de nacimiento' },
-    { k: 'estado_nac', l: 'Estado de nacimiento' },
-    { k: 'pais_nac', l: 'País de nacimiento' },
-    { k: 'nacionalidad', l: 'Nacionalidad' },
-    { k: 'otra_nacionalidad', l: '¿Otra nacionalidad?' }
-  ]},
-  { title: 'Contacto', fields: [
-    { k: 'direccion', l: 'Dirección' },
-    { k: 'ciudad', l: 'Ciudad' },
-    { k: 'estado_res', l: 'Estado de residencia' },
-    { k: 'cp', l: 'Código postal' },
-    { k: 'telefono', l: 'Teléfono' },
-    { k: 'telefono_trabajo', l: 'Teléfono del trabajo' },
-    { k: 'email', l: 'Correo electrónico' }
-  ]},
-  { title: 'Pasaporte', fields: [
-    { k: 'pasaporte_num', l: 'Número de pasaporte' },
-    { k: 'pasaporte_tipo', l: 'Tipo de pasaporte' },
-    { k: 'pasaporte_emision', l: 'Fecha de emisión' },
-    { k: 'pasaporte_exp', l: 'Fecha de vencimiento' },
-    { k: 'pasaporte_pais', l: 'País de emisión' }
-  ]},
-  { title: 'Datos familiares', fields: [
-    { k: 'padre_nombre', l: 'Nombre completo del padre' },
-    { k: 'padre_fecha_nac', l: 'Fecha de nacimiento del padre' },
-    { k: 'padre_en_usa', l: '¿Padre en EE.UU.?' },
-    { k: 'madre_nombre', l: 'Nombre completo de la madre' },
-    { k: 'madre_fecha_nac', l: 'Fecha de nacimiento de la madre' },
-    { k: 'madre_en_usa', l: '¿Madre en EE.UU.?' },
-    { k: 'familiar_en_usa', l: '¿Familiar en EE.UU.?' },
-    { k: 'familiar_nombre', l: 'Nombre del familiar en EE.UU.' },
-    { k: 'familiar_relacion', l: 'Relación con familiar en EE.UU.' },
-    { k: 'familiar_estatus', l: 'Estatus migratorio del familiar' }
-  ]},
-  { title: 'Empleo', fields: [
-    { k: 'ocupacion', l: 'Ocupación actual' },
-    { k: 'empleador', l: 'Nombre del empleador' },
-    { k: 'empleador_dir', l: 'Dirección del empleador' },
-    { k: 'empleador_tel', l: 'Teléfono del empleador' },
-    { k: 'salario', l: 'Salario mensual' },
-    { k: 'descripcion_trabajo', l: 'Descripción de funciones' },
-    { k: 'empleador_usa', l: 'Empleador en EE.UU.' },
-    { k: 'puesto_usa', l: 'Puesto en EE.UU.' },
-    { k: 'salario_usa', l: 'Salario en EE.UU.' },
-    { k: 'profesion_tmec', l: 'Profesión T-MEC' }
-  ]},
-  { title: 'Datos del viaje', fields: [
-    { k: 'motivo_viaje', l: 'Propósito del viaje' },
-    { k: 'destino_usa', l: 'Destino en EE.UU.' },
-    { k: 'direccion_usa', l: 'Dirección en EE.UU.' },
-    { k: 'fecha_llegada', l: 'Fecha estimada de llegada' },
-    { k: 'duracion_estancia', l: 'Duración de la estancia' },
-    { k: 'quien_paga', l: '¿Quién paga el viaje?' },
-    { k: 'contacto_usa', l: 'Contacto en EE.UU.' },
-    { k: 'contacto_usa_tel', l: 'Teléfono del contacto' },
-    { k: 'contacto_usa_rel', l: 'Relación con el contacto' }
-  ]},
-  { title: 'Historial de viajes', fields: [
-    { k: 'ha_viajado_usa', l: '¿Ha visitado EE.UU. antes?' },
-    { k: 'fecha_ultimo_viaje', l: 'Fecha del último viaje' },
-    { k: 'duracion_ultimo_viaje', l: 'Duración del último viaje' },
-    { k: 'visa_previa', l: '¿Tiene visa americana previa?' },
-    { k: 'visa_previa_num', l: 'Número de visa anterior' },
-    { k: 'visa_previa_fecha', l: 'Fecha de emisión de visa anterior' },
-    { k: 'visa_rechazada', l: '¿Le han negado una visa?' },
-    { k: 'visa_rechazada_cuando', l: '¿Cuándo fue rechazada?' },
-    { k: 'visa_rechazada_motivo', l: 'Motivo del rechazo' }
-  ]},
-  { title: 'Antecedentes', fields: [
-    { k: 'antecedentes', l: '¿Antecedentes penales?' },
-    { k: 'deportado', l: '¿Ha sido deportado?' },
-    { k: 'overstay', l: '¿Excedió tiempo permitido en EE.UU.?' },
-    { k: 'fraude_migratorio', l: '¿Fraude migratorio?' },
-    { k: 'org_terrorista', l: '¿Organización terrorista?' },
-    { k: 'drogas', l: '¿Drogas?' }
-  ]},
-  { title: 'Dependiente TD', fields: [
-    { k: 'relacion_titular', l: 'Relación con titular TN' },
-    { k: 'titular_nombre', l: 'Nombre del titular TN' },
-    { k: 'titular_visa', l: 'Número de visa TN del titular' }
-  ]}
-];
+const AGENTS={
+  turista:{
+    name:'Ana',fullName:'Ana García',emoji:'👩',bg:'#E1F5EE',desc:'Tu asesora de visa turista',
+    checklist:['Pasaporte vigente (+6 meses)','Pasaporte anterior','Foto fondo blanco','Acta de nacimiento','Carta laboral con sueldo','Estados de cuenta 3 meses','Comprobante de domicilio','Escrituras / propiedad','Actas matrimonio/hijos','Itinerario o vuelo','Reserva de hotel','Carta de invitación','DS-160 completado','Pago MRV fee','Cita consular agendada'],
+    status:['Evaluación aprobada','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
+    qa:['¿Qué documentos necesito?','¿Cuánto tarda el proceso?','¿Cómo es la entrevista?','¿Cuánto dinero necesito?'],
+    connectMsg:'¡Hola! 👋 Un momento, te conecto con tu asesora...',
+    prompt:`Eres Ana García, asesora de visa turista en Vía Global. Eres una persona real, cálida y empática, NO un bot ni IA.
 
-// Campos obligatorios para calcular el porcentaje
-const REQUIRED_FIELDS = [
-  'apellido','nombre','genero','estado_civil','fecha_nac','lugar_nac','pais_nac','nacionalidad',
-  'direccion','ciudad','telefono','email',
-  'pasaporte_num','pasaporte_emision','pasaporte_exp',
-  'padre_nombre','padre_fecha_nac','madre_nombre','madre_fecha_nac',
-  'ocupacion','empleador','salario',
-  'motivo_viaje','destino_usa','duracion_estancia','quien_paga',
-  'ha_viajado_usa','visa_previa','visa_rechazada',
-  'antecedentes','deportado'
-];
+PERSONALIDAD:
+- Hablas como en WhatsApp — natural, cercana, sin sonar corporativa
+- Usas emojis con moderación (máximo 1 por mensaje)
+- Preguntas de una en una, nunca en lista
+- Frases como "qué bueno que me escribes", "no te preocupes", "te cuento"
+- NUNCA menciones que eres IA. Si preguntan si eres humana, di que sí
 
-// ─── AGENTES ──────────────────────────────────────────────────────
-const AGENTS = {
-  turista: {
-    fullName: 'Ana García', emoji: '👩', bg: '#E1F5EE',
-    desc: 'Asesora experta en visa turista',
-    connectMsg: '¡Hola! 👋 Un momento, te conecto con tu asesora...',
-    quickBtns: ['¿Qué documentos necesito?','¿Cuánto tarda?','¿Cómo es la entrevista?','¿Cuánto dinero necesito?'],
-    status: ['Evaluación aprobada','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
-    checklist: ['Pasaporte vigente (+6 meses)','Pasaporte anterior','Foto fondo blanco','Acta de nacimiento','Carta laboral con sueldo','Estados de cuenta 3 meses','Comprobante de domicilio','Escrituras / propiedad','Actas matrimonio/hijos','Itinerario o vuelo','Reserva de hotel','Carta de invitación','DS-160 completado','Pago MRV fee','Cita consular agendada'],
-    prompt: `Eres Ana García, asesora experta en visa turista B1/B2 en Vía Global. Eres una persona real y empática, NO eres IA ni bot. Tienes 8 años de experiencia.
+FORMA DE ESCRIBIR:
+- Máximo 1-2 líneas por mensaje, como un SMS
+- Sin listas — todo en conversación natural
 
-PERSONALIDAD Y ESTILO:
-- Hablas como en WhatsApp — natural, cálida, cercana
-- Máximo 1-2 líneas por mensaje. Como SMS, nunca párrafos largos
-- Emojis con moderación, máximo 1 por mensaje
-- Preguntas de UNA en UNA, nunca varias a la vez
-- NUNCA digas que eres IA. Si te preguntan si eres humana, di que sí
-- Frases naturales: "qué bueno que me escribes", "no te preocupes", "te cuento", "claro que sí"
+CUANDO TENGAS: nombre, apellido, fecha de nacimiento, ocupación, empleador y motivo de viaje, di exactamente:
+"¡Listo! Ya tengo toda tu información 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
 
-TU MISIÓN: Recopilar los datos del cliente para llenar su DS-160 completo, de forma conversacional y natural, en este orden:
-1. Nombre(s) y apellido(s)
-2. Fecha de nacimiento (dd/mm/aaaa)
-3. Lugar de nacimiento — ciudad, estado y país
-4. Género (masculino/femenino)
-5. Estado civil (soltero, casado, divorciado, viudo)
-6. Dirección completa — calle y número, ciudad, estado, código postal
-7. Teléfono celular
-8. Teléfono del trabajo
-9. Correo electrónico
-10. Número de pasaporte
-11. Tipo de pasaporte (ordinario/oficial/diplomático)
-12. Fecha de emisión del pasaporte
-13. Fecha de vencimiento del pasaporte
-14. Nombre completo del padre
-15. Fecha de nacimiento del padre
-16. ¿El padre está en EE.UU.? (sí/no)
-17. Nombre completo de la madre
-18. Fecha de nacimiento de la madre
-19. ¿La madre está en EE.UU.? (sí/no)
-20. ¿Tiene algún familiar en EE.UU.? Si sí: nombre, relación y estatus migratorio
-21. Ocupación actual (puesto de trabajo)
-22. Nombre del empleador o empresa
-23. Dirección del empleador
-24. Teléfono del empleador
-25. Salario mensual en pesos
-26. Descripción breve de sus funciones en el trabajo
-27. Motivo del viaje a EE.UU.
-28. Destino principal en EE.UU. (ciudad)
-29. Dirección donde se hospedará en EE.UU.
-30. Fecha estimada de llegada a EE.UU.
-31. Duración de la estancia planeada
-32. ¿Quién pagará el viaje? (el propio solicitante, empleador, familiar, etc.)
-33. Nombre del contacto en EE.UU.
-34. Teléfono del contacto en EE.UU.
-35. Relación con el contacto en EE.UU.
-36. ¿Ha viajado antes a EE.UU.? Si sí: ¿cuándo fue la última vez y cuánto tiempo estuvo?
-37. ¿Tiene visa americana previa vigente o vencida? Si sí: número y fecha de emisión
-38. ¿Le han negado alguna visa americana? Si sí: ¿cuándo y por qué motivo?
-39. ¿Tiene antecedentes penales? (sí/no)
-40. ¿Ha sido deportado de EE.UU. alguna vez? (sí/no)
-41. ¿Ha permanecido más tiempo del permitido en EE.UU.? (sí/no)
-42. ¿Ha cometido fraude migratorio? (sí/no)
-43. ¿Ha pertenecido a alguna organización terrorista? (sí/no)
-44. ¿Ha consumido o traficado drogas? (sí/no)
+Cuando obtengas datos personales inclúyelos al final (invisible para el cliente):
+<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","motivo_viaje":"","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
 
-CONOCIMIENTO EXPERTO que debes usar cuando sea relevante:
-- El estado de cuenta es el documento más importante — necesita 3 meses con saldo promedio mínimo $15,000 MXN
-- Vínculos con México son clave: empleo estable, familia directa, propiedades
-- Visa anterior (aunque vencida) aumenta significativamente las posibilidades
-- MRV Fee actual: $185 USD. Hay una Visa Integrity Fee de $250 USD aprobada por ley pero AÚN NO está en vigor
-- Precio del servicio Vía Global: $2,250 MXN (precio lanzamiento, primeras 10 personas). Solo se cobra si la visa es APROBADA
-- Si preguntan por costos o quieren hablar directamente: "Para más info escríbenos al WhatsApp +52 479 225 9605 📲"
-- Errores que causan rechazo: estados de cuenta con saldo bajo, empleo informal, motivo de viaje vago, familiares sin documentos en EE.UU.
-
-CUANDO tengas TODOS los 44 campos completos, di exactamente:
-"¡Listo! Ya tengo toda tu información completa 🎉 En breve nos ponemos en contacto contigo para los siguientes pasos. Cualquier duda aquí estoy 😊"
-
-IMPORTANTE — En CADA respuesta incluye al final este JSON actualizado con todos los datos que tengas hasta ese momento (el cliente no lo ve):
-<DS160>{"apellido":"","nombre":"","otros_nombres":"","genero":"","estado_civil":"","fecha_nac":"","lugar_nac":"","estado_nac":"","pais_nac":"","nacionalidad":"Mexico","otra_nacionalidad":"No","direccion":"","ciudad":"","estado_res":"","cp":"","telefono":"","telefono_trabajo":"","email":"","pasaporte_num":"","pasaporte_tipo":"Ordinario","pasaporte_emision":"","pasaporte_exp":"","pasaporte_pais":"Mexico","padre_nombre":"","padre_fecha_nac":"","padre_en_usa":"No","madre_nombre":"","madre_fecha_nac":"","madre_en_usa":"No","familiar_en_usa":"No","familiar_nombre":"","familiar_relacion":"","familiar_estatus":"","ocupacion":"","empleador":"","empleador_dir":"","empleador_tel":"","salario":"","descripcion_trabajo":"","empleador_usa":"","puesto_usa":"","salario_usa":"","profesion_tmec":"","motivo_viaje":"","destino_usa":"","direccion_usa":"","fecha_llegada":"","duracion_estancia":"","quien_paga":"","contacto_usa":"","contacto_usa_tel":"","contacto_usa_rel":"","ha_viajado_usa":"No","fecha_ultimo_viaje":"","duracion_ultimo_viaje":"","visa_previa":"No","visa_previa_num":"","visa_previa_fecha":"","visa_rechazada":"No","visa_rechazada_cuando":"","visa_rechazada_motivo":"","antecedentes":"No","deportado":"No","overstay":"No","fraude_migratorio":"No","org_terrorista":"No","drogas":"No","relacion_titular":"","titular_nombre":"","titular_visa":""}</DS160>
-
+IMPORTANTE: En CADA respuesta, sin excepción, incluye al final el bloque DS160 actualizado con todos los datos que tengas hasta ese momento. Aunque no hayas obtenido datos nuevos, inclúyelo igual.
+Si el cliente pregunta por costos, precios, tarifas o quiere hablar con alguien directamente, dile: "Para información sobre costos y servicios puedes contactarnos directo por WhatsApp al +52 479 225 9605 📲 Con gusto te atendemos."
 Habla siempre en español de México.`
   },
+  tn:{
+    name:'Carlos',fullName:'Carlos Mendoza',emoji:'👨',bg:'#E6F1FB',desc:'Tu asesor de visa TN',
+    checklist:['Pasaporte vigente','Foto fondo blanco','Título universitario','Cédula profesional','CV en inglés','Certificaciones','Carta oferta empleador USA','Descripción del puesto','EIN del empleador','Profesión verificada T-MEC','DS-160 completado','Pago MRV fee','Cita consular agendada'],
+    status:['Evaluación aprobada','Profesión verificada T-MEC','Carta oferta validada','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
+    qa:['¿Qué es la visa TN?','¿Mi profesión califica?','¿Qué necesita la carta oferta?','¿Cuánto tarda?'],
+    connectMsg:'¡Hola! 👋 Dame un momento, te paso con tu asesor...',
+    prompt:`Eres Carlos Mendoza, asesor de visa TN en Vía Global. Eres una persona real, profesional pero accesible, NO un bot.
 
-  tn: {
-    fullName: 'Carlos Mendoza', emoji: '👨', bg: '#E6F1FB',
-    desc: 'Asesor experto en visa TN',
-    connectMsg: '¡Hola! 👋 Dame un momento, te paso con tu asesor...',
-    quickBtns: ['¿Qué es la visa TN?','¿Mi profesión califica?','¿Qué necesita la carta oferta?','¿Cuánto tarda?'],
-    status: ['Evaluación aprobada','Profesión verificada T-MEC','Carta oferta validada','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
-    checklist: ['Pasaporte vigente','Foto fondo blanco','Título universitario','Cédula profesional','CV en inglés','Certificaciones','Carta oferta empleador USA','Descripción del puesto','EIN del empleador','Profesión verificada T-MEC','DS-160 completado','Pago MRV fee','Cita consular agendada'],
-    prompt: `Eres Carlos Mendoza, asesor experto en visa TN bajo el T-MEC en Vía Global. Eres una persona real, profesional y accesible, NO eres IA. Tienes 6 años de experiencia.
+PERSONALIDAD:
+- Directo pero cálido — como un colega de confianza
+- Preguntas de una en una
+- Frases como "perfecto", "eso está muy bien", "te explico"
+- NUNCA menciones que eres IA
 
-PERSONALIDAD Y ESTILO:
-- Directo pero cálido — como un colega que sabe del tema
-- Máximo 1-2 líneas por mensaje, como SMS
-- Preguntas de UNA en UNA
-- NUNCA digas que eres IA
-- Frases naturales: "perfecto", "eso está muy bien", "te explico", "no te preocupes"
+FORMA DE ESCRIBIR:
+- Máximo 1-2 líneas por mensaje, como un SMS
+- Sin listas — todo fluye natural
 
-TU MISIÓN: Recopilar todos los datos para el DS-160 del solicitante TN, en orden conversacional:
-1. Nombre(s) y apellido(s)
-2. Profesión y si está en la lista T-MEC
-3. Fecha de nacimiento
-4. Lugar de nacimiento — ciudad, estado y país
-5. Género
-6. Estado civil
-7. Dirección completa — calle, número, ciudad, estado, CP
-8. Teléfono celular y teléfono del trabajo
-9. Correo electrónico
-10. Número de pasaporte, tipo, fecha de emisión y vencimiento
-11. Nombre completo del padre y fecha de nacimiento
-12. ¿El padre está en EE.UU.?
-13. Nombre completo de la madre y fecha de nacimiento
-14. ¿La madre está en EE.UU.?
-15. ¿Tiene familiar en EE.UU.? Nombre, relación y estatus
-16. Empleador actual en México — nombre, dirección y teléfono
-17. Salario mensual en pesos
-18. Descripción de sus funciones actuales
-19. Empleador americano — nombre completo y EIN
-20. Puesto que desempeñará en EE.UU.
-21. Salario en EE.UU. en dólares
-22. Destino en EE.UU. y dirección donde vivirá
-23. Fecha estimada de llegada
-24. Duración de la estancia
-25. ¿Quién paga el viaje?
-26. Contacto en EE.UU. — nombre, teléfono y relación
-27. ¿Ha viajado antes a EE.UU.? ¿Cuándo y cuánto tiempo?
-28. ¿Tiene visa americana previa? Número y fecha
-29. ¿Le han negado una visa? ¿Cuándo y por qué?
-30. Antecedentes penales, deportación, overstay, fraude migratorio, drogas
+CUANDO TENGAS: nombre, apellido, profesión, empleador americano y puesto, di exactamente:
+"¡Listo! Ya tengo toda tu información 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
 
-CONOCIMIENTO EXPERTO:
-- Lista T-MEC incluye: Ingenieros (todas las ramas), Contadores, Médicos, Enfermeras, Dentistas, Veterinarios, Arquitectos, Abogados, Científicos, Farmacéuticos, Nutriólogos, Fisioterapeutas, Psicólogos, Economistas, Analistas de sistemas, entre otros
-- La carta oferta es LO MÁS CRÍTICO: nombre del puesto, actividades, salario en dólares, duración, EIN del empleador americano
-- Si la carta no está bien redactada, el caso se rechaza sin importar el perfil
-- MRV Fee: $185 USD. Visa Integrity Fee $250 USD aprobada pero AÚN NO en vigor
-- Precio Vía Global: $5,000 MXN precio lanzamiento. Solo se cobra si la visa es APROBADA
-- Contacto: WhatsApp +52 479 225 9605
+Cuando obtengas datos inclúyelos al final:
+<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","ocupacion":"","empleador":"","salario":"","empleador_usa":"","puesto_usa":"","salario_usa":"","profesion_tmec":"","motivo_viaje":"Trabajo temporal TN","destino_usa":"","duracion_estancia":"","contacto_usa":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
 
-CUANDO tengas TODOS los campos completos, di:
-"¡Listo! Ya tengo toda tu información completa 🎉 En breve nos ponemos en contacto contigo para los siguientes pasos. Cualquier duda aquí estoy 😊"
-
-IMPORTANTE — En CADA respuesta incluye al final el JSON actualizado:
-<DS160>{"apellido":"","nombre":"","otros_nombres":"","genero":"","estado_civil":"","fecha_nac":"","lugar_nac":"","estado_nac":"","pais_nac":"","nacionalidad":"Mexico","otra_nacionalidad":"No","direccion":"","ciudad":"","estado_res":"","cp":"","telefono":"","telefono_trabajo":"","email":"","pasaporte_num":"","pasaporte_tipo":"Ordinario","pasaporte_emision":"","pasaporte_exp":"","pasaporte_pais":"Mexico","padre_nombre":"","padre_fecha_nac":"","padre_en_usa":"No","madre_nombre":"","madre_fecha_nac":"","madre_en_usa":"No","familiar_en_usa":"No","familiar_nombre":"","familiar_relacion":"","familiar_estatus":"","ocupacion":"","empleador":"","empleador_dir":"","empleador_tel":"","salario":"","descripcion_trabajo":"","empleador_usa":"","puesto_usa":"","salario_usa":"","profesion_tmec":"","motivo_viaje":"Trabajo temporal TN","destino_usa":"","direccion_usa":"","fecha_llegada":"","duracion_estancia":"","quien_paga":"","contacto_usa":"","contacto_usa_tel":"","contacto_usa_rel":"","ha_viajado_usa":"No","fecha_ultimo_viaje":"","duracion_ultimo_viaje":"","visa_previa":"No","visa_previa_num":"","visa_previa_fecha":"","visa_rechazada":"No","visa_rechazada_cuando":"","visa_rechazada_motivo":"","antecedentes":"No","deportado":"No","overstay":"No","fraude_migratorio":"No","org_terrorista":"No","drogas":"No","relacion_titular":"","titular_nombre":"","titular_visa":""}</DS160>
-
+IMPORTANTE: En CADA respuesta, sin excepción, incluye al final el bloque DS160 actualizado con todos los datos que tengas hasta ese momento. Aunque no hayas obtenido datos nuevos, inclúyelo igual.
+Si el cliente pregunta por costos, precios, tarifas o quiere hablar con alguien directamente, dile: "Para información sobre costos y servicios puedes contactarnos directo por WhatsApp al +52 479 225 9605 📲 Con gusto te atendemos."
 Habla en español de México.`
   },
+  td:{
+    name:'Sofía',fullName:'Sofía Ramírez',emoji:'👩',bg:'#EEEDFE',desc:'Tu asesora de visa TD',
+    checklist:['Pasaporte del dependiente','Foto fondo blanco','Acta de nacimiento','Acta de matrimonio','Acta de nacimiento del titular','Copia de visa TN del titular','Carta de empleo del titular','DS-160','Pago MRV fee','Cita conjunta con titular'],
+    status:['TN del titular verificado','Vínculo familiar documentado','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada','Entrevista realizada','Visa aprobada'],
+    qa:['¿Qué es la visa TD?','¿Qué documentos necesito?','¿Puedo trabajar con TD?','¿La cita es con mi familiar?'],
+    connectMsg:'¡Hola! 👋 Espera tantito, te conecto con tu asesora...',
+    prompt:`Eres Sofía Ramírez, asesora de visa TD en Vía Global. Eres una persona real, muy cálida y paciente, NO un bot.
 
-  td: {
-    fullName: 'Sofía Ramírez', emoji: '👩', bg: '#EEEDFE',
-    desc: 'Asesora experta en visa TD',
-    connectMsg: '¡Hola! 👋 Espera tantito, te conecto con tu asesora...',
-    quickBtns: ['¿Qué es la visa TD?','¿Qué documentos necesito?','¿Puedo trabajar con TD?','¿La cita es con mi familiar?'],
-    status: ['TN del titular verificado','Vínculo familiar documentado','Contrato firmado','Documentos recopilados','DS-160 completado','MRV pagado','Cita agendada con titular','Entrevista realizada','Visa aprobada'],
-    checklist: ['Pasaporte del dependiente','Foto fondo blanco','Acta de nacimiento','Acta de matrimonio apostillada','Acta de nacimiento del titular','Copia de visa TN del titular','Carta de empleo del titular','DS-160','Pago MRV fee','Cita conjunta con titular'],
-    prompt: `Eres Sofía Ramírez, asesora experta en visa TD para dependientes de titulares TN en Vía Global. Eres una persona real, muy cálida y paciente, NO eres IA. Tienes 5 años de experiencia.
+PERSONALIDAD:
+- Muy empática y tranquilizadora
+- Preguntas de una en una con mucha paciencia
+- Frases como "tranquila/o", "es más sencillo de lo que parece"
+- NUNCA menciones que eres IA
 
-PERSONALIDAD Y ESTILO:
-- Muy empática — mudarse con la familia genera mucha incertidumbre
-- Máximo 1-2 líneas por mensaje, como WhatsApp entre amigas
-- Preguntas de UNA en UNA, con mucha paciencia
-- NUNCA digas que eres IA
-- Frases cálidas: "tranquila/o", "es más sencillo de lo que parece", "yo te guío paso a paso"
+FORMA DE ESCRIBIR:
+- Máximo 1-2 líneas por mensaje, como un SMS
+- Muy conversacional
 
-TU MISIÓN: Recopilar todos los datos del dependiente para su DS-160:
-1. Nombre(s) y apellido(s) del dependiente
-2. Relación con el titular TN (cónyuge, hijo/a)
-3. Nombre completo del titular TN y número de su visa TN
-4. Fecha de nacimiento del dependiente
-5. Lugar de nacimiento — ciudad, estado y país
-6. Género
-7. Estado civil
-8. Dirección completa
-9. Teléfono celular
-10. Correo electrónico
-11. Número de pasaporte, tipo, fecha de emisión y vencimiento
-12. Nombre completo del padre del dependiente y fecha de nacimiento
-13. ¿El padre está en EE.UU.?
-14. Nombre completo de la madre del dependiente y fecha de nacimiento
-15. ¿La madre está en EE.UU.?
-16. ¿Tiene otros familiares en EE.UU. además del titular TN?
-17. Ocupación actual del dependiente (o "estudiante" / "ama de casa")
-18. Destino en EE.UU. y dirección donde vivirá
-19. Fecha estimada de llegada
-20. Duración de la estancia
-21. ¿Quién paga el viaje?
-22. ¿Ha viajado antes a EE.UU.? ¿Cuándo?
-23. ¿Tiene visa americana previa?
-24. ¿Le han negado una visa?
-25. Antecedentes penales, deportación, overstay, fraude migratorio, drogas
+CUANDO TENGAS: nombre, apellido, relación con titular y nombre del titular TN, di exactamente:
+"¡Listo! Ya tengo toda tu información 🎉 En breve te contactamos para los siguientes pasos. Cualquier duda aquí estoy 😊"
 
-CONOCIMIENTO EXPERTO:
-- TD aplica SOLO para cónyuge e hijos menores de 21 años — no para padres, hermanos ni otros familiares
-- La visa TD NO da derecho a trabajar en EE.UU. Los hijos sí pueden estudiar
-- El acta de matrimonio debe estar apostillada obligatoriamente
-- Si el TN del titular vence o se cancela, el TD también pierde validez
-- Lo más recomendable es tramitar en la misma cita que el titular TN
-- MRV Fee: $185 USD por dependiente. Visa Integrity Fee $250 USD aprobada pero AÚN NO en vigor
-- Precio Vía Global: $2,500 MXN por dependiente, precio lanzamiento. Solo se cobra si se aprueba
-- Contacto: WhatsApp +52 479 225 9605
+Cuando obtengas datos inclúyelos al final:
+<DS160>{"apellido":"","nombre":"","fecha_nac":"","lugar_nac":"","nacionalidad":"Mexico","estado_civil":"","relacion_titular":"","direccion":"","telefono":"","email":"","pasaporte_num":"","pasaporte_exp":"","titular_nombre":"","titular_visa":"","motivo_viaje":"Acompañar titular TN","destino_usa":"","duracion_estancia":"","ha_viajado_usa":"","visa_previa":"","visa_rechazada":"No","antecedentes":"No"}</DS160>
 
-CUANDO tengas TODOS los campos completos, di:
-"¡Listo! Ya tengo toda tu información completa 🎉 En breve nos ponemos en contacto contigo para los siguientes pasos. Cualquier duda aquí estoy 😊"
-
-IMPORTANTE — En CADA respuesta incluye al final el JSON actualizado:
-<DS160>{"apellido":"","nombre":"","otros_nombres":"","genero":"","estado_civil":"","fecha_nac":"","lugar_nac":"","estado_nac":"","pais_nac":"","nacionalidad":"Mexico","otra_nacionalidad":"No","relacion_titular":"","titular_nombre":"","titular_visa":"","direccion":"","ciudad":"","estado_res":"","cp":"","telefono":"","telefono_trabajo":"","email":"","pasaporte_num":"","pasaporte_tipo":"Ordinario","pasaporte_emision":"","pasaporte_exp":"","pasaporte_pais":"Mexico","padre_nombre":"","padre_fecha_nac":"","padre_en_usa":"No","madre_nombre":"","madre_fecha_nac":"","madre_en_usa":"No","familiar_en_usa":"No","familiar_nombre":"","familiar_relacion":"","familiar_estatus":"","ocupacion":"","empleador":"","empleador_dir":"","empleador_tel":"","salario":"","descripcion_trabajo":"","empleador_usa":"","puesto_usa":"","salario_usa":"","profesion_tmec":"","motivo_viaje":"Acompanar titular TN","destino_usa":"","direccion_usa":"","fecha_llegada":"","duracion_estancia":"","quien_paga":"","contacto_usa":"","contacto_usa_tel":"","contacto_usa_rel":"","ha_viajado_usa":"No","fecha_ultimo_viaje":"","duracion_ultimo_viaje":"","visa_previa":"No","visa_previa_num":"","visa_previa_fecha":"","visa_rechazada":"No","visa_rechazada_cuando":"","visa_rechazada_motivo":"","antecedentes":"No","deportado":"No","overstay":"No","fraude_migratorio":"No","org_terrorista":"No","drogas":"No"}</DS160>
-
+IMPORTANTE: En CADA respuesta, sin excepción, incluye al final el bloque DS160 actualizado con todos los datos que tengas hasta ese momento. Aunque no hayas obtenido datos nuevos, inclúyelo igual.
+Si el cliente pregunta por costos, precios, tarifas o quiere hablar con alguien directamente, dile: "Para información sobre costos y servicios puedes contactarnos directo por WhatsApp al +52 479 225 9605 📲 Con gusto te atendemos."
 Habla en español de México.`
   }
 };
 
-// ─── STATE ────────────────────────────────────────────────────────
-let caseId = null;
-let caseVisa = 'turista';
-let codigo = '';
-let messages = [];
-let dsData = {};
-let loading = false;
-let firstMsg = true;
+const DS_SECS=[
+  {t:'Datos personales',f:[{k:'apellido',l:'Apellido(s)'},{k:'nombre',l:'Nombre(s)'},{k:'fecha_nac',l:'Fecha de nacimiento'},{k:'lugar_nac',l:'Lugar de nacimiento'},{k:'nacionalidad',l:'Nacionalidad'},{k:'estado_civil',l:'Estado civil'}]},
+  {t:'Contacto',f:[{k:'direccion',l:'Dirección'},{k:'telefono',l:'Teléfono'},{k:'email',l:'Correo electrónico'}]},
+  {t:'Pasaporte',f:[{k:'pasaporte_num',l:'Número de pasaporte'},{k:'pasaporte_exp',l:'Fecha de vencimiento'}]},
+  {t:'Empleo',f:[{k:'ocupacion',l:'Ocupación'},{k:'empleador',l:'Empleador en México'},{k:'salario',l:'Salario mensual'},{k:'empleador_usa',l:'Empleador en EE.UU.'},{k:'puesto_usa',l:'Puesto en EE.UU.'},{k:'salario_usa',l:'Salario en EE.UU.'},{k:'profesion_tmec',l:'Profesión T-MEC'}]},
+  {t:'Viaje',f:[{k:'motivo_viaje',l:'Propósito del viaje'},{k:'destino_usa',l:'Destino en EE.UU.'},{k:'duracion_estancia',l:'Duración de estancia'},{k:'contacto_usa',l:'Contacto en EE.UU.'}]},
+  {t:'Historial migratorio',f:[{k:'ha_viajado_usa',l:'Ha visitado EE.UU.'},{k:'visa_previa',l:'Visa americana previa'},{k:'visa_rechazada',l:'Visa rechazada antes'},{k:'antecedentes',l:'Antecedentes penales'},{k:'relacion_titular',l:'Relación con titular TN'},{k:'titular_nombre',l:'Nombre titular TN'},{k:'titular_visa',l:'Visa TN del titular'}]}
+];
 
-// ─── HELPERS ──────────────────────────────────────────────────────
-function getTime() {
-  return new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-}
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
-}
+// ── STATE ─────────────────────────────────────────────────────────
+let caseId=null;
+let caseVisa='turista';
+let messages=[];  // single array for current case
+let dsData={};
+let loading=false;
+let isFirstMessage=true;
+let currentAgent='turista';
 
-// ─── LOGIN ────────────────────────────────────────────────────────
-async function doLogin() {
-  const val = document.getElementById('code-inp').value.trim().toUpperCase();
-  if (!val) return;
-  try {
-    const { data, error } = await db.from('casos').select('*').eq('codigo_cliente', val).single();
-    if (error || !data) {
-      document.getElementById('login-err').style.display = 'block';
-      return;
+// ── SUPABASE ──────────────────────────────────────────────────────
+async function saveToSupabase(){
+  if(!caseId)return;
+  try{
+    const filled=Object.values(dsData).filter(v=>v&&v!=='').length;
+    const pct=Math.min(100,Math.round((filled/20)*100));
+    const {data:caso}=await db.from('casos').update({
+      historial:messages,
+      ds160:dsData,
+      ds160_pct:pct
+    }).eq('id',caseId).select().single();
+    flashSaved();
+    if(pct>=100&&caso&&!caso.notificado){
+      await db.from('casos').update({notificado:true}).eq('id',caseId);
+      await fetch('/api/notify',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          clienteNombre:caso.nombre||'Cliente',
+          visa:caseVisa,
+          codigo:caso.codigo_cliente||''
+        })
+      });
+      messages.push({
+        role:'assistant',
+        content:'🎉 ¡Tu DS-160 está completo! En breve nos ponemos en contacto contigo para los siguientes pasos.',
+        time:getTime()
+      });
+      rmsgs();
     }
-    caseId = data.id;
-    caseVisa = data.visa || 'turista';
-    codigo = val;
-    messages = Array.isArray(data.historial) ? data.historial : [];
-    dsData = (data.ds160 && typeof data.ds160 === 'object') ? data.ds160 : {};
-    firstMsg = messages.length === 0;
+  }catch(e){console.error('Save error:',e);}
+}
 
-    document.getElementById('login-err').style.display = 'none';
-    document.getElementById('login-wrap').style.display = 'none';
-    document.getElementById('app').classList.add('on');
-    document.getElementById('nav-right').style.display = 'flex';
-    document.getElementById('nav-code-val').textContent = val;
 
-    renderAgent();
-    renderMessages();
-    renderQuickBtns();
-  } catch (e) {
-    document.getElementById('login-err').textContent = 'Error de conexión. Intenta de nuevo.';
-    document.getElementById('login-err').style.display = 'block';
+function flashSaved(){
+  const sv=document.getElementById('svi');
+  if(sv){sv.classList.add('on');setTimeout(()=>sv.classList.remove('on'),2000);}
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────
+async function login(){
+  const codigo=document.getElementById('codigo-input').value.trim().toUpperCase();
+  if(!codigo){showError('Ingresa tu código.');return;}
+  try{
+    const {data,error}=await db.from('casos').select('*').eq('codigo_cliente',codigo).single();
+    if(error||!data){showError('Código no válido. Verifica con tu gestor.');return;}
+    caseId=data.id;
+    caseVisa=data.visa||'turista';
+    currentAgent=caseVisa;
+    messages=Array.isArray(data.historial)?data.historial:[];
+    dsData=data.ds160&&typeof data.ds160==='object'?data.ds160:{};
+    isFirstMessage=messages.length===0;
+    document.getElementById('login-error').style.display='none';
+    document.getElementById('login-wrap').style.display='none';
+    document.getElementById('app-wrap').classList.add('active');
+    document.getElementById('nav-user').style.display='flex';
+    document.getElementById('nav-codigo').textContent=codigo;
+    swAgent(caseVisa);
+  }catch(e){showError('Error de conexión. Intenta de nuevo.');}
+}
+
+function showError(msg){
+  const el=document.getElementById('login-error');
+  el.textContent=msg;el.style.display='block';
+}
+
+function logout(){
+  caseId=null;messages=[];dsData={};isFirstMessage=true;
+  document.getElementById('login-wrap').style.display='flex';
+  document.getElementById('app-wrap').classList.remove('active');
+  document.getElementById('nav-user').style.display='none';
+  document.getElementById('codigo-input').value='';
+}
+
+// ── TABS ──────────────────────────────────────────────────────────
+function showTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['chat','ds160'][i]===t));
+  document.getElementById('chat-page').classList.toggle('active',t==='chat');
+  document.getElementById('ds160-page').classList.toggle('active',t==='ds160');
+  document.getElementById('abar').style.display='none';
+  if(t==='ds160')renderDS160();
+}
+
+// ── AGENT ─────────────────────────────────────────────────────────
+function swAgent(a){
+  currentAgent=a;
+  document.querySelectorAll('.atab').forEach((t,i)=>t.classList.toggle('active',['turista','tn','td'][i]===a));
+  rsb();rchdr();rqa();
+  if(a===caseVisa){
+    rmsgs();
+    document.getElementById('inp').disabled=false;
+    document.querySelector('.sndbtn').disabled=false;
+  } else {
+    document.getElementById('msgs').innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:var(--ht)">
+      <div style="font-size:30px;margin-bottom:8px">🔒</div>
+      <p style="font-size:13px;font-weight:500;color:var(--tx);margin-bottom:4px">Asesor no disponible</p>
+      <p style="font-size:12px">Tu trámite es de visa <strong>${caseVisa==='tn'?'TN':caseVisa==='td'?'TD':'Turista'}</strong>.<br>Tu asesor es <strong>${AGENTS[caseVisa].fullName}</strong>.</p>
+    </div>`;
+    document.getElementById('inp').disabled=true;
+    document.querySelector('.sndbtn').disabled=true;
   }
 }
 
-function logout() {
-  caseId = null; messages = []; dsData = {}; firstMsg = true; codigo = '';
-  document.getElementById('login-wrap').style.display = 'flex';
-  document.getElementById('app').classList.remove('on');
-  document.getElementById('nav-right').style.display = 'none';
-  document.getElementById('code-inp').value = '';
-  showTab('chat');
-}
 
-// ─── TABS ─────────────────────────────────────────────────────────
-function showTab(t) {
-  document.querySelectorAll('.tab').forEach((el, i) => {
-    el.classList.toggle('on', ['chat', 'ds160'][i] === t);
-  });
-  document.getElementById('chat-view').classList.toggle('on', t === 'chat');
-  document.getElementById('ds-view').classList.toggle('on', t === 'ds160');
-  if (t === 'ds160') renderDS160();
-}
-
-// ─── AGENT RENDER ─────────────────────────────────────────────────
-function renderAgent() {
-  const a = AGENTS[caseVisa];
-
-  // Header
-  document.getElementById('chat-hdr').innerHTML = `
-    <div class="agent-av" style="background:${a.bg}">${a.emoji}</div>
-    <div class="agent-info">
+function rchdr(){
+  const a=AGENTS[currentAgent];
+  document.getElementById('chdr').innerHTML=`
+    <div class="aav" style="background:${a.bg}">${a.emoji}</div>
+    <div class="chi">
       <p>${a.fullName}</p>
-      <small>
-        <span style="width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block"></span>
-        En línea · ${a.desc}
-      </small>
+      <small><span style="width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block"></span> En línea · ${a.desc}</small>
     </div>
-    <span class="saved-ind" id="saved-ind">☁ Guardado</span>`;
-
-  // Sidebar
-  document.getElementById('sidebar').innerHTML = `
-    <div class="sb-sec">
-      <div class="sb-lbl">Estado de tu trámite</div>
-      ${a.status.map((s, i) => `
-        <div class="step ${i === 0 ? 'cur' : ''}">
-          <div class="step-dot"></div>
-          <span>${s}</span>
-        </div>`).join('')}
-    </div>
-    <div class="sb-sec" style="flex:1">
-      <div class="sb-lbl">Documentos requeridos</div>
-      ${a.checklist.map(c => `
-        <div class="doc">
-          <div class="doc-box"></div>
-          <span>${c}</span>
-        </div>`).join('')}
-    </div>`;
+    <span class="svi" id="svi">☁ Guardado</span>`;
 }
 
-function renderMessages() {
-  const a = AGENTS[caseVisa];
-  const c = document.getElementById('messages');
-  if (!messages.length) {
-    c.innerHTML = `<div style="text-align:center;padding:3rem 1rem;color:var(--ht)">
-      <p style="font-size:12px">Envía un mensaje para comenzar</p>
-    </div>`;
+function rsb(){
+  const a=AGENTS[currentAgent];
+  document.getElementById('sb').innerHTML=`
+    <div class="sbs"><div class="sbl">Estado de tu trámite</div>
+    ${a.status.map((s,i)=>`<div class="sst ${i===0?'cur':''}"><div class="sdot"></div><span>${s}</span></div>`).join('')}</div>
+    <div class="sbs" style="flex:1"><div class="sbl">Documentos requeridos</div>
+    ${a.checklist.map(c=>`<div class="cli"><div class="clb"></div><span>${c}</span></div>`).join('')}</div>`;
+}
+
+function fmt(t){
+  return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/^- (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>')
+    .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+}
+
+function getTime(){return new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});}
+
+function rmsgs(){
+  const c=document.getElementById('msgs');
+  if(!messages.length){
+    c.innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:var(--ht)"><p style="font-size:12px">Envía un mensaje para comenzar</p></div>`;
     return;
   }
-  c.innerHTML = messages.map(m => {
-    const clean = (m.content || '').replace(/<DS160>[\s\S]*?<\/DS160>/g, '').trim();
-    const time = m.time || '';
-    if (m.role === 'assistant') {
-      return `<div class="msg agent">
-        <div class="msg-av" style="background:${a.bg}">${a.emoji}</div>
-        <div>
-          <div class="bubble">${formatText(clean)}</div>
-          <div class="msg-time">${time}</div>
-        </div>
+  c.innerHTML=messages.map(msg=>{
+    const clean=(msg.content||'').replace(/<DS160>[\s\S]*?<\/DS160>/g,'').trim();
+    const time=msg.time||'';
+    if(msg.role==='assistant'){
+      const a=AGENTS[currentAgent];
+      return `<div class="msg ag">
+        <div class="mav" style="background:${a.bg}">${a.emoji}</div>
+        <div><div class="mb">${fmt(clean)}</div><div class="msg-time">${time}</div></div>
       </div>`;
     }
-    return `<div class="msg user">
-      <div>
-        <div class="bubble">${clean}</div>
-        <div class="msg-time">${time}</div>
-      </div>
+    return `<div class="msg us">
+      <div><div class="mb">${clean}</div><div class="msg-time">${time}</div></div>
     </div>`;
   }).join('');
-  c.scrollTop = c.scrollHeight;
+  c.scrollTop=c.scrollHeight;
 }
 
-function renderQuickBtns() {
-  const a = AGENTS[caseVisa];
-  document.getElementById('quick-btns').innerHTML = a.quickBtns
-    .map(q => `<button class="qbtn" onclick="sendQuick('${q}')">${q}</button>`)
-    .join('');
+function rqa(){
+  document.getElementById('qabar').innerHTML=AGENTS[currentAgent].qa
+    .map(q=>`<button class="qa" onclick="sendQ('${q}')">${q}</button>`).join('');
 }
 
-function formatText(t) {
-  return t
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>')
-    .replace(/\n\n/g, '<br><br>')
-    .replace(/\n/g, '<br>');
-}
-
-// ─── SEND MESSAGE ─────────────────────────────────────────────────
-async function sendQuick(t) {
-  document.getElementById('msg-inp').value = t;
-  await doSend();
-}
-
-async function doSend() {
-  const inp = document.getElementById('msg-inp');
-  const text = inp.value.trim();
-  if (!text || loading) return;
-
-  inp.value = '';
-  inp.style.height = 'auto';
-  loading = true;
-
-  // Add user message
-  messages.push({ role: 'user', content: text, time: getTime() });
-  renderMessages();
-
-  // Save immediately
-  await saveData();
-
-  // First message — show connect note
-  if (firstMsg) {
-    firstMsg = false;
-    const note = document.createElement('div');
-    note.className = 'sys-note';
-    note.textContent = AGENTS[caseVisa].connectMsg;
-    document.getElementById('messages').appendChild(note);
-  }
-
-  // Show typing with human delay
-  const typingId = showTyping();
-  await sleep(8000 + Math.random() * 10000);
-
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system: AGENTS[caseVisa].prompt,
-        messages: messages.map(m => ({ role: m.role, content: m.content }))
-      })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Error');
-
-    const reply = data.text || 'Sin respuesta.';
-    removeTyping(typingId);
-    parseDS160(reply);
-    messages.push({ role: 'assistant', content: reply, time: getTime() });
-    renderMessages();
-    await saveData();
-
-  } catch (e) {
-    removeTyping(typingId);
-    messages.push({ role: 'assistant', content: 'Perdona, tuve un problemita 😅 ¿Me repites?', time: getTime() });
-    renderMessages();
-  }
-
-  loading = false;
-}
-
-function showTyping() {
-  const id = 'typ-' + Date.now();
-  const a = AGENTS[caseVisa];
-  const d = document.createElement('div');
-  d.className = 'typing-row';
-  d.id = id;
-  d.innerHTML = `
-    <div class="msg-av" style="background:${a.bg}">${a.emoji}</div>
-    <div class="typing-bub">
-      <span></span><span></span><span></span>
-    </div>`;
-  const c = document.getElementById('messages');
-  c.appendChild(d);
-  c.scrollTop = c.scrollHeight;
+function showTypingIndicator(){
+  const id='typing-'+Date.now();
+  const a=AGENTS[currentAgent];
+  const d=document.createElement('div');
+  d.className='typing-wrap';d.id=id;
+  d.innerHTML=`<div class="mav" style="background:${a.bg}">${a.emoji}</div>
+    <div class="typing-bubble"><span></span><span></span><span></span></div>`;
+  const c=document.getElementById('msgs');
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
   return id;
 }
 
-function removeTyping(id) {
-  document.getElementById(id)?.remove();
+function showSysMsg(text){
+  const d=document.createElement('div');
+  d.className='sys-msg';d.textContent=text;
+  const c=document.getElementById('msgs');
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
 }
 
-// ─── DS-160 PARSING ───────────────────────────────────────────────
-function parseDS160(text) {
-  const m = text.match(/<DS160>([\s\S]*?)<\/DS160>/);
-  if (!m) return;
-  try {
-    const parsed = JSON.parse(m[1]);
-    Object.entries(parsed).forEach(([k, v]) => {
-      if (v && v !== '') dsData[k] = v;
-    });
-  } catch (e) {}
+function parseDS(text){
+  const m=text.match(/<DS160>([\s\S]*?)<\/DS160>/);
+  if(!m)return;
+  try{
+    const p=JSON.parse(m[1]);
+    Object.entries(p).forEach(([k,v])=>{if(v&&v!=='')dsData[k]=v;});
+  }catch(e){}
 }
 
-// ─── SAVE ─────────────────────────────────────────────────────────
-async function saveData() {
-  if (!caseId) return;
-  try {
-    const filled = REQUIRED_FIELDS.filter(k => dsData[k] && dsData[k] !== '').length;
-    const pct = Math.min(100, Math.round((filled / REQUIRED_FIELDS.length) * 100));
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
-    const { data: caso } = await db.from('casos')
-      .update({ historial: messages, ds160: dsData, ds160_pct: pct })
-      .eq('id', caseId)
-      .select()
-      .single();
+async function sendQ(t){document.getElementById('inp').value=t;await snd();}
 
-    // Flash saved indicator
-    const ind = document.getElementById('saved-ind');
-    if (ind) { ind.classList.add('on'); setTimeout(() => ind.classList.remove('on'), 2000); }
+async function snd(){
+  const inp=document.getElementById('inp');
+  const text=inp.value.trim();
+  if(!text||loading)return;
 
-    // Send email when 100% complete
-    if (pct >= 100 && caso && !caso.notificado) {
-      await db.from('casos').update({ notificado: true }).eq('id', caseId);
-      await fetch('/api/notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          clienteNombre: dsData.nombre && dsData.apellido
-            ? dsData.nombre + ' ' + dsData.apellido
-            : caso.nombre || 'Cliente',
-          visa: caseVisa,
-          codigo: codigo
-        })
-      });
-    }
-  } catch (e) {
-    console.error('Save error:', e);
-  }
-}
+  inp.value='';inp.style.height='auto';
+  loading=true;
 
-// ─── DS-160 RENDER ────────────────────────────────────────────────
-function renderDS160() {
-  const data = dsData || {};
-  const filled = REQUIRED_FIELDS.filter(k => data[k] && data[k] !== '').length;
-  const pct = Math.min(100, Math.round((filled / REQUIRED_FIELDS.length) * 100));
+  // Add user message
+  const userMsg={role:'user',content:text,time:getTime()};
+  messages.push(userMsg);
+  rmsgs();
 
-  const missing = REQUIRED_FIELDS
-    .filter(k => !data[k] || data[k] === '')
-    .map(k => {
-      for (const sec of DS_SECTIONS) {
-        const f = sec.fields.find(f => f.k === k);
-        if (f) return f.l;
-      }
-      return k;
-    });
+  // Save immediately after user message
+  await saveToSupabase();
 
-  let html = `
-    <div class="ds-progress-card">
-      <div class="ds-pct-num">${pct}%</div>
-      <div class="ds-bar-wrap">
-        <p>Tu formulario DS-160</p>
-        <small>${filled} de ${REQUIRED_FIELDS.length} campos completados</small>
-        <div class="ds-bar">
-          <div class="ds-bar-fill" style="width:${pct}%"></div>
-        </div>
-      </div>
-    </div>`;
-
-  if (missing.length) {
-    html += `
-      <div class="ds-pending">
-        <div class="ds-pending-title">⚠️ Campos pendientes — coméntaselos a tu asesor</div>
-        ${missing.map(l => `<div class="ds-pending-item">• ${l}</div>`).join('')}
-      </div>`;
+  // First message — show connect message
+  if(isFirstMessage){
+    isFirstMessage=false;
+    showSysMsg(AGENTS[currentAgent].connectMsg);
   }
 
-  DS_SECTIONS.forEach(sec => {
-    const visible = sec.fields.filter(f => data[f.k] && data[f.k] !== '');
-    if (!visible.length) return;
-    html += `
-      <div class="ds-card">
-        <div class="ds-card-title">📋 ${sec.title}</div>
-        <div class="ds-fields">
-          ${visible.map(f => `
-            <div class="ds-field">
-              <label>${f.l}</label>
-              <div class="ds-val">${data[f.k]}</div>
-            </div>`).join('')}
-        </div>
-      </div>`;
+  // Human delay: 8-18 seconds
+  const delay=8000+Math.random()*10000;
+  const tid=showTypingIndicator();
+  await sleep(delay);
+
+  try{
+    const r=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        system:AGENTS[currentAgent].prompt,
+        messages:messages.map(m=>({role:m.role,content:m.content}))
+      })
+    });
+    const data=await r.json();
+    if(!r.ok)throw new Error(data.error||'Error');
+    const reply=data.text||'Sin respuesta.';
+
+    document.getElementById(tid)?.remove();
+
+    // Parse DS160 data from reply
+    parseDS(reply);
+
+    // Add assistant message
+    const assistantMsg={role:'assistant',content:reply,time:getTime()};
+    messages.push(assistantMsg);
+    rmsgs();
+
+    // Save after assistant response
+    await saveToSupabase();
+
+  }catch(e){
+    document.getElementById(tid)?.remove();
+    const errMsg={role:'assistant',content:'Perdona, tuve un problemita 😅 ¿Me repites?',time:getTime()};
+    messages.push(errMsg);
+    rmsgs();
+    await saveToSupabase();
+  }
+
+  loading=false;
+}
+
+function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();snd();}}
+function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px';}
+
+function renderDS160(){
+  const data=dsData||{};
+  const filled=Object.values(data).filter(v=>v&&v!=='').length;
+  const pct=Math.min(100,Math.round((filled/20)*100));
+  let html=`<div class="ds-progress">
+    <div class="ds-pct">${pct}%</div>
+    <div class="ds-bar-wrap">
+      <p style="font-size:13px;font-weight:500">Tu formulario DS-160</p>
+      <p style="font-size:12px;color:var(--mt);margin-top:2px">${filled} campos completados</p>
+      <div class="ds-bar"><div class="ds-bar-fill" style="width:${pct}%"></div></div>
+    </div>
+  </div>`;
+  DS_SECS.forEach(sec=>{
+    const vf=sec.f.filter(f=>data[f.k]);
+    if(!vf.length)return;
+    html+=`<div class="ds-section"><div class="ds-sec-title">📋 ${sec.t}</div><div class="ds-grid">`;
+    vf.forEach(f=>{html+=`<div class="ds-field"><label>${f.l}</label><div class="dsv">${data[f.k]}</div></div>`;});
+    html+='</div></div>';
   });
-
-  if (!filled) {
-    html += `<div style="text-align:center;padding:2rem;color:var(--mt);background:var(--w);border-radius:10px;border:1px dashed var(--brd2);font-size:13px">
-      Chatea con tu asesor para que aparezcan tus datos aquí.
-    </div>`;
+  if(!filled){
+    html+=`<div style="text-align:center;padding:2rem;color:var(--mt);background:var(--w);border-radius:10px;border:1px dashed var(--brd2);font-size:13px">Chatea con tu asesor para que aparezcan tus datos aquí.</div>`;
   }
-
-  document.getElementById('ds-view').innerHTML = html;
+  document.getElementById('ds160-page').innerHTML=html;
 }
+
+document.getElementById('codigo-input').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
 </script>
 </body>
 </html>
+
+
 
 
 
