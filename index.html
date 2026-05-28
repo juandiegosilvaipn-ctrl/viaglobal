@@ -366,20 +366,11 @@ function showTab(t){
 function swAgent(a){
   currentAgent=a;
   rsb();rchdr();rqa();
-  if(a===caseVisa){
-    rmsgs();
-    document.getElementById('inp').disabled=false;
-    document.querySelector('.sndbtn').disabled=false;
-  }else{
-    document.getElementById('msgs').innerHTML=`<div style="text-align:center;padding:3rem 1rem;color:var(--ht)">
-      <div style="font-size:30px;margin-bottom:8px">🔒</div>
-      <p style="font-size:13px;font-weight:500;color:var(--tx);margin-bottom:4px">Asesor no disponible</p>
-      <p style="font-size:12px">Tu trámite es de visa <strong>${caseVisa==='tn'?'TN':caseVisa==='td'?'TD':'Turista'}</strong>.<br>Tu asesor es <strong>${AGENTS[caseVisa].fullName}</strong>.</p>
-    </div>`;
-    document.getElementById('inp').disabled=true;
-    document.querySelector('.sndbtn').disabled=true;
-  }
+  rmsgs();
+  document.getElementById('inp').disabled=false;
+  document.querySelector('.sndbtn').disabled=false;
 }
+
 
 function rchdr(){
   const a=AGENTS[currentAgent];
