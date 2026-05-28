@@ -381,7 +381,6 @@ async function login(){
     document.getElementById('nav-user').style.display='flex';
     document.getElementById('nav-codigo').textContent=codigo;
     swAgent(caseVisa);
-if(messages.length>0)rmsgs();
   }catch(e){showError('Error de conexión. Intenta de nuevo.');}
 }
 
@@ -400,7 +399,6 @@ function showTab(t){
   document.getElementById('chat-page').classList.toggle('active',t==='chat');
   document.getElementById('ds160-page').classList.toggle('active',t==='ds160');
   document.getElementById('abar').style.display='none';
-  if(t==='chat')swAgent(caseVisa);
   if(t==='ds160')renderDS160();
 }
 
@@ -578,6 +576,9 @@ document.getElementById('codigo-input').addEventListener('keydown',e=>{if(e.key=
 </script>
 </body>
 </html>
+
+
+
 
 
 
