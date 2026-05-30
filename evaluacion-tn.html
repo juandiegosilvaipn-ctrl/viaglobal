@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vía Global — Evaluación Visa TN</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#378ADD;--blue-dark:#185FA5;--blue-light:#E6F1FB;--gold:#BA7517;--gold-light:#FAEEDA;--red-light:#FCEBEB;--red-dark:#791F1F;--gray:#f4f3f0;--gray-border:#e2e0da;--text:#1a1a18;--text-muted:#6b6b67;--teal-dark:#085041;}
+body{font-family:'DM Sans',sans-serif;background:var(--gray);color:var(--text);min-height:100vh;}
+header{background:var(--teal-dark);padding:1.5rem 2rem;display:flex;align-items:center;gap:14px;}
+.logo-mark{width:40px;height:40px;background:rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:20px;color:#fff;}
+.logo-text{color:#fff;}
+.logo-text span{font-family:'DM Serif Display',serif;font-size:20px;display:block;}
+.logo-text small{font-size:11px;opacity:0.7;letter-spacing:0.08em;text-transform:uppercase;}
+.hero{background:var(--blue-dark);padding:2rem 2rem 3rem;color:#fff;text-align:center;}
+.hero-badge{display:inline-block;background:rgba(255,255,255,.15);padding:4px 14px;border-radius:20px;font-size:12px;margin-bottom:12px;}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(24px,5vw,36px);font-weight:400;margin-bottom:0.5rem;}
+.hero p{font-size:15px;opacity:0.8;max-width:420px;margin:0 auto;line-height:1.6;}
+.card-container{max-width:680px;margin:-1.5rem auto 0;padding:0 1rem 3rem;}
+.card{background:#fff;border-radius:16px;border:1px solid var(--gray-border);padding:1.75rem;margin-bottom:1rem;}
+.section-label{font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--blue);margin-bottom:1.25rem;display:flex;align-items:center;gap:6px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--gray-border);}
+.field{margin-bottom:1.25rem;}
+.field label{font-size:13px;color:var(--text-muted);display:block;margin-bottom:6px;}
+.field input,.field select{width:100%;padding:10px 14px;border:1px solid var(--gray-border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:#fff;outline:none;transition:border-color 0.2s;}
+.field input:focus,.field select:focus{border-color:var(--blue);}
+.fields-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:500px){.fields-row{grid-template-columns:1fr;}}
+.q-label{font-size:14px;font-weight:500;margin-bottom:10px;line-height:1.4;}
+.opt-group{display:flex;flex-direction:column;gap:6px;margin-bottom:1.5rem;}
+.opt{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--gray-border);border-radius:8px;cursor:pointer;font-size:13px;color:var(--text);transition:all 0.15s;user-select:none;}
+.opt:hover{border-color:var(--blue);background:var(--blue-light);}
+.opt.selected{border-color:var(--blue);background:var(--blue-light);color:var(--blue-dark);font-weight:500;}
+.opt-radio{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--gray-border);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.opt.selected .opt-radio{border-color:var(--blue);background:var(--blue);}
+.opt.selected .opt-radio::after{content:'';width:6px;height:6px;border-radius:50%;background:#fff;}
+.opt-pts{margin-left:auto;font-size:11px;color:var(--text-muted);font-weight:400;flex-shrink:0;}
+.opt.selected .opt-pts{color:var(--blue-dark);}
+.btn-calcular{width:100%;padding:14px;background:var(--blue-dark);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:background 0.2s,transform 0.1s;}
+.btn-calcular:hover{background:var(--blue);}
+.btn-calcular:active{transform:scale(0.99);}
+#resultado{display:none;margin-top:1rem;}
+.result-card{background:#fff;border-radius:16px;border:1px solid var(--gray-border);padding:1.75rem;animation:fadeUp 0.3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.result-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.result-badge{font-size:12px;font-weight:500;padding:5px 14px;border-radius:20px;white-space:nowrap;}
+.badge-aceptar{background:var(--blue-light);color:var(--blue-dark);}
+.badge-revisar{background:var(--gold-light);color:var(--gold);}
+.badge-rechazar{background:var(--red-light);color:var(--red-dark);}
+.result-score{font-family:'DM Serif Display',serif;font-size:52px;color:var(--text);line-height:1;margin-bottom:4px;}
+.result-score span{font-family:'DM Sans',sans-serif;font-size:18px;color:var(--text-muted);}
+.progress-bar{height:8px;background:var(--gray);border-radius:4px;overflow:hidden;margin:12px 0 1rem;}
+.progress-fill{height:100%;border-radius:4px;transition:width 0.6s cubic-bezier(.4,0,.2,1);}
+.result-msg{font-size:14px;line-height:1.6;margin-bottom:1.25rem;padding:12px 14px;border-radius:8px;border-left:3px solid var(--blue);background:var(--blue-light);color:var(--blue-dark);}
+.score-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;}
+.score-item{background:var(--gray);border-radius:8px;padding:10px 12px;}
+.score-item p:first-child{font-size:11px;color:var(--text-muted);margin-bottom:4px;}
+.score-item p:last-child{font-size:18px;font-weight:500;}
+.score-item p:last-child span{font-size:11px;color:var(--text-muted);font-weight:400;}
+.btn-reiniciar{width:100%;margin-top:1rem;padding:12px;background:transparent;color:var(--text-muted);border:1px solid var(--gray-border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:all 0.15s;}
+.btn-reiniciar:hover{border-color:var(--blue);color:var(--blue-dark);}
+.cta-card{background:var(--blue-dark);border-radius:16px;padding:1.75rem;text-align:center;color:#fff;margin-top:1rem;}
+.cta-card h3{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;margin-bottom:6px;}
+.cta-card p{font-size:13px;opacity:.8;margin-bottom:1.25rem;line-height:1.5;}
+.cta-card a{display:inline-block;background:#fff;color:var(--blue-dark);padding:11px 24px;border-radius:8px;font-weight:500;font-size:14px;text-decoration:none;}
+footer{text-align:center;padding:2rem;font-size:12px;color:var(--text-muted);}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-mark">V</div>
+  <div class="logo-text"><span>Vía Global</span><small>Gestoría de visas</small></div>
+</header>
+<div class="hero">
+  <div class="hero-badge">💼 Visa TN — T-MEC</div>
+  <h1>Evaluación de candidato</h1>
+  <p>Descubre si tu profesión y perfil califican para la visa TN y trabajar en EE.UU. bajo el T-MEC.</p>
+</div>
+<div class="card-container">
+  <div class="card">
+    <div class="section-label">Datos generales</div>
+    <div class="fields-row">
+      <div class="field"><label>Nombre completo</label><input type="text" id="f-nombre" placeholder="Tu nombre"></div>
+      <div class="field"><label>Profesión</label><input type="text" id="f-profesion" placeholder="Ej. Ingeniero, Contador..."></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">Profesión y credenciales — 35 pts</div>
+    <p class="q-label">¿Tu profesión está en la lista T-MEC?</p>
+    <div class="opt-group" data-q="q1">
+      <div class="opt" onclick="sel(this,15)"><div class="opt-radio"></div>Sí, tengo título universitario y cédula profesional<span class="opt-pts">15 pts</span></div>
+      <div class="opt" onclick="sel(this,8)"><div class="opt-radio"></div>Sí, tengo título pero sin cédula profesional<span class="opt-pts">8 pts</span></div>
+      <div class="opt" onclick="sel(this,0)"><div class="opt-radio"></div>No estoy seguro / No está en la lista<span class="opt-pts">0 pts</span></div>
+    </div>
+    <p class="q-label">¿Tienes experiencia laboral comprobable en tu área de más de 2 años?</p>
+    <div class="opt-group" data-q="q2">
+      <div class="opt" onclick="sel(this,12)"><div class="opt-radio"></div>Sí, más de 2 años comprobables<span class="opt-pts">12 pts</span></div>
+      <div class="opt" onclick="sel(this,6)"><div class="opt-radio"></div>Entre 1 y 2 años<span class="opt-pts">6 pts</span></div>
+      <div class="opt" onclick="sel(this,0)"><div class="opt-radio"></div>Menos de 1 año o sin experiencia<span class="opt-pts">0 pts</span></div>
+    </div>
+    <p class="q-label">¿Tienes CV actualizado en inglés?</p>
+    <div class="opt-group" data-q="q3">
+      <div class="opt" onclick="sel(this,8)"><div class="opt-radio"></div>Sí<span class="opt-pts">8 pts</span></div>
+      <div class="opt" onclick="sel(this,0)"><div class="opt-radio"></div>No<span class="opt-pts">0 pts</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">Oferta de trabajo — 40 pts</div>
+    <p class="q-label">¿Tienes carta oferta de una empresa americana?</p>
+    <div class="opt-group" data-q="q4">
+      <div class="opt" onclick="sel(this,20)"><div class="opt-radio"></div>Sí, carta oferta completa y firmada con EIN<span class="opt-pts">20 pts</span></div>
+      <div class="opt" onclick="sel(this,10)"><div class="opt-radio"></div>Tengo oferta pero la carta está incompleta<span class="opt-pts">10 pts</span></div>
+      <div class="opt" onclick="sel(this,0)"><div class="opt-radio"></div>No tengo oferta aún<span class="opt-pts">0 pts</span></div>
+    </div>
+    <p class="q-label">¿El puesto ofrecido corresponde exactamente a tu profesión del título?</p>
+    <div class="opt-group" data-q="q5">
+      <div class="opt" onclick="sel(this,12)"><div class="opt-radio"></div>Sí, perfectamente alineado<span class="opt-pts">12 pts</span></div>
+      <div class="opt" onclick="sel(this,5)"><div class="opt-radio"></div>Parcialmente relacionado<span class="opt-pts">5 pts</span></div>
+      <div class="opt" onclick="sel(this,0)"><div class="opt-radio"></div>No está relacionado<span class="opt-pts">0 pts</span></div>
+    </div>
+    <p class="q-label">¿La empresa americana tiene registro legal (EIN) verificable?</p>
+    <div class="opt-group" data-q="q6">
+      <div class="opt" onclick="sel(this,8)"><div class="opt-radio"></div>Sí, empresa establecida con EIN<span class="opt-pts">8 pts</span></div>
+      <div class="opt" onclick="sel(this,3)"><div class="opt-radio"></div>No lo sé con certeza<span class="opt-pts">3 pts</span></div>
+      <div class="opt" onclick="sel(this,0)"><div class="opt-radio"></div>No tiene o no sé<span class="opt-pts">0 pts</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">Historial migratorio — 25 pts</div>
+    <p class="q-label">¿Has tenido visas americanas rechazadas?</p>
+    <div class="opt-group" data-q="q7">
+      <div class="opt" onclick="sel(this,10)"><div class="opt-radio"></div>No, ninguna<span class="opt-pts">10 pts</span></div>
+      <div class="opt" onclick="sel(this,3)"><div class="opt-radio"></div>Sí, una vez hace más de 3 años<span class="opt-pts">3 pts</span></div>
+      <div class="opt" onclick="sel(this,0)"><div class="opt-radio"></div>Sí, recientemente<span class="opt-pts">0 pts</span></div>
+    </div>
+    <p class="q-label">¿Tienes antecedentes penales?</p>
+    <div class="opt-group" data-q="q8">
+      <div class="opt" onclick="sel(this,10)"><div class="opt-radio"></div>No<span class="opt-pts">10 pts</span></div>
+      <div class="opt" onclick="sel(this,0)"><div class="opt-radio"></div>Sí<span class="opt-pts">0 pts</span></div>
+    </div>
+    <p class="q-label">¿Has sido deportado o te han cancelado una visa?</p>
+    <div class="opt-group" data-q="q9">
+      <div class="opt" onclick="sel(this,5)"><div class="opt-radio"></div>No<span class="opt-pts">5 pts</span></div>
+      <div class="opt" onclick="sel(this,0)"><div class="opt-radio"></div>Sí<span class="opt-pts">0 pts</span></div>
+    </div>
+  </div>
+
+  <button class="btn-calcular" onclick="calcular()">Ver mi resultado →</button>
+  <div id="resultado">
+    <div class="result-card" id="result-inner"></div>
+    <div class="cta-card" id="cta-inner" style="display:none">
+      <h3>¿Listo para tramitar tu visa TN?</h3>
+      <p>Solo pagas si te aprueban. Te ayudamos con la carta oferta y todo el proceso.</p>
+      <a href="https://wa.me/524792259605?text=Hola,%20quiero%20tramitar%20mi%20visa%20TN" target="_blank">📲 Escríbenos al WhatsApp</a>
+    </div>
+    <button class="btn-reiniciar" onclick="reiniciar()">Evaluar de nuevo</button>
+  </div>
+</div>
+<footer>© 2025 Vía Global — Gestoría de visas · Todos los derechos reservados</footer>
+
+<script>
+const scores={};
+function sel(el,pts){
+  const g=el.closest('.opt-group');
+  g.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  scores[g.dataset.q]=pts;
+}
+function calcular(){
+  const nombre=document.getElementById('f-nombre').value.trim()||'Candidato';
+  const profesion=document.getElementById('f-profesion').value.trim();
+  const total=Object.values(scores).reduce((a,b)=>a+b,0);
+  const pct=Math.round((total/100)*100);
+  let badgeClass,label,msg,fillColor;
+  if(total>=75){badgeClass='badge-aceptar';label='✓ Aceptar';fillColor='#378ADD';msg='Perfil sólido con alta probabilidad de aprobación para visa TN. La carta oferta y tu título son clave — te guiamos en todo el proceso.';}
+  else if(total>=50){badgeClass='badge-revisar';label='⚠ Revisar';fillColor='#BA7517';msg='Tienes posibilidades pero hay áreas que reforzar. Lo más crítico es tener la carta oferta completa y bien redactada con el EIN del empleador.';}
+  else{badgeClass='badge-rechazar';label='✕ Alto riesgo';fillColor='#E24B4A';msg='Tu perfil presenta factores de riesgo. Antes de solicitar la visa te recomendamos consultar con nosotros para identificar qué se puede mejorar.';}
+  const vProf=(scores.q1||0)+(scores.q2||0)+(scores.q3||0);
+  const vOferta=(scores.q4||0)+(scores.q5||0)+(scores.q6||0);
+  const vHist=(scores.q7||0)+(scores.q8||0)+(scores.q9||0);
+  document.getElementById('result-inner').innerHTML=`
+    <div class="result-header">
+      <div><p style="font-size:16px;font-weight:500;">${nombre}${profesion?' — '+profesion:''}</p><p style="font-size:13px;color:var(--text-muted);">Visa TN — T-MEC</p></div>
+      <span class="result-badge ${badgeClass}">${label}</span>
+    </div>
+    <div class="result-score">${total}<span> / 100 pts</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${Math.max(4,pct)}%;background:${fillColor};"></div></div>
+    <div class="result-msg">${msg}</div>
+    <div class="score-breakdown">
+      <div class="score-item"><p>Profesión</p><p>${vProf} <span>/ 35</span></p></div>
+      <div class="score-item"><p>Oferta trabajo</p><p>${vOferta} <span>/ 40</span></p></div>
+      <div class="score-item"><p>Historial</p><p>${vHist} <span>/ 25</span></p></div>
+    </div>`;
+  document.getElementById('resultado').style.display='block';
+  document.getElementById('cta-inner').style.display='block';
+  document.getElementById('resultado').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function reiniciar(){
+  document.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+  Object.keys(scores).forEach(k=>delete scores[k]);
+  document.getElementById('f-nombre').value='';
+  document.getElementById('f-profesion').value='';
+  document.getElementById('resultado').style.display='none';
+  document.getElementById('cta-inner').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
